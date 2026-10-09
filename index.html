@@ -1,1237 +1,909 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>بيت العز - طلبات المنزل وطبخ اليوم</title>
-  
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Google Fonts: Cairo -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --primary-orange: #FF5A00;
-      --secondary-orange: #FF7E33;
-      --accent-yellow: #FFB800;
-      --bg-cream: #FFF8F3;
-      --card-bg: #FFFFFF;
-      --text-main: #1F1F1F;
-      --text-sub: #666666;
-      --border-color: #F0E6DF;
-      --shadow: 0 8px 24px rgba(255, 90, 0, 0.08);
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --radius-sm: 8px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Cairo', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background-color: #FAFAFA;
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      direction: rtl;
-    }
-
-    /* App Container (Mobile Frame Constraint) */
-    .app-container {
-      width: 100%;
-      max-width: 480px;
-      background-color: var(--bg-cream);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      box-shadow: 0 0 40px rgba(0,0,0,0.1);
-      padding-bottom: 80px;
-    }
-
-    /* Auth Overlay */
-    .auth-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--bg-cream);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      text-align: center;
-    }
-
-    .auth-card {
-      background: #fff;
-      padding: 30px 20px;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      width: 100%;
-      max-width: 360px;
-      border: 1px solid var(--border-color);
-    }
-
-    .auth-logo {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, var(--primary-orange), var(--accent-yellow));
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      color: white;
-      font-size: 36px;
-      box-shadow: 0 8px 20px rgba(255, 90, 0, 0.25);
-    }
-
-    .auth-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
-
-    .auth-sub {
-      font-size: 13px;
-      color: var(--text-sub);
-      margin-bottom: 24px;
-    }
-
-    .user-select-btn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 14px 18px;
-      margin-bottom: 12px;
-      border: 2px solid var(--border-color);
-      border-radius: var(--radius-md);
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-weight: 700;
-      font-size: 15px;
-    }
-
-    .user-select-btn:hover, .user-select-btn.active {
-      border-color: var(--primary-orange);
-      background: #FFF5EF;
-      color: var(--primary-orange);
-    }
-
-    .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-    }
-
-    .btn-primary {
-      width: 100%;
-      background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: var(--radius-md);
-      font-weight: 800;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-      box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3);
-      transition: transform 0.1s;
-    }
-
-    .btn-primary:active {
-      transform: scale(0.98);
-    }
-
-    /* Header */
-    header {
-      background: white;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .header-user {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: var(--primary-orange);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 18px;
-    }
-
-    .header-info h2 {
-      font-size: 15px;
-      font-weight: 800;
-    }
-
-    .header-info p {
-      font-size: 11px;
-      color: var(--text-sub);
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .icon-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: #F7F7F7;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-main);
-      cursor: pointer;
-      position: relative;
-    }
-
-    .icon-btn.active-bell {
-      background: #FFF0E6;
-      color: var(--primary-orange);
-    }
-
-    /* Banners Carousel */
-    .banner-wrapper {
-      padding: 16px 20px 0;
-    }
-
-    .hero-banner {
-      background: linear-gradient(135deg, #FF5A00, #FFB800);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      color: white;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 8px 20px rgba(255, 90, 0, 0.2);
-    }
-
-    .hero-banner::after {
-      content: '\f2e7';
-      font-family: 'Font Awesome 6 Free';
-      font-weight: 900;
-      position: absolute;
-      left: -10px;
-      bottom: -20px;
-      font-size: 110px;
-      opacity: 0.15;
-    }
-
-    .hero-banner h3 {
-      font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .hero-banner p {
-      font-size: 12px;
-      opacity: 0.95;
-    }
-
-    /* Main Navigation Tabs */
-    .nav-tabs {
-      display: flex;
-      gap: 10px;
-      padding: 16px 20px;
-      background: transparent;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 12px 8px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-color);
-      background: white;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--text-sub);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-
-    .tab-btn.active {
-      background: var(--primary-orange);
-      color: white;
-      border-color: var(--primary-orange);
-      box-shadow: 0 4px 12px rgba(255, 90, 0, 0.25);
-    }
-
-    /* Content Sections */
-    .section-content {
-      display: none;
-      padding: 0 20px 20px;
-    }
-
-    .section-content.active {
-      display: block;
-    }
-
-    /* Quick Add Bar */
-    .add-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      background: white;
-      padding: 8px;
-      border-radius: var(--radius-md);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      border: 1px solid var(--border-color);
-    }
-
-    .add-bar input, .add-bar select {
-      border: none;
-      outline: none;
-      padding: 8px 12px;
-      font-size: 14px;
-    }
-
-    .add-bar input[type="text"] {
-      flex: 1;
-    }
-
-    .add-bar select {
-      background: #F7F7F7;
-      border-radius: var(--radius-sm);
-      font-weight: 600;
-      color: var(--text-sub);
-      font-size: 12px;
-    }
-
-    .add-btn {
-      background: var(--primary-orange);
-      color: white;
-      border: none;
-      width: 42px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Categories Grid */
-    .category-chips {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 10px;
-      margin-bottom: 14px;
-      scrollbar-width: none;
-    }
-
-    .category-chip {
-      padding: 6px 14px;
-      background: white;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-      cursor: pointer;
-      color: var(--text-sub);
-    }
-
-    .category-chip.active {
-      background: #FFF0E6;
-      border-color: var(--primary-orange);
-      color: var(--primary-orange);
-    }
-
-    /* Grocery Items List */
-    .items-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .item-card {
-      background: white;
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-      transition: all 0.2s;
-    }
-
-    .item-card.completed {
-      opacity: 0.55;
-      background: #F9F9F9;
-    }
-
-    .item-card.completed .item-title {
-      text-decoration: line-through;
-    }
-
-    .item-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .custom-checkbox {
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      border: 2px solid #DDD;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: white;
-      font-size: 12px;
-      transition: all 0.2s;
-    }
-
-    .item-card.completed .custom-checkbox {
-      background: #2E7D32;
-      border-color: #2E7D32;
-    }
-
-    .item-title {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .item-meta {
-      font-size: 11px;
-      color: var(--text-sub);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 2px;
-    }
-
-    .badge-added-by {
-      background: #F0F0F0;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 600;
-    }
-
-    .item-actions {
-      display: flex;
-      gap: 6px;
-    }
-
-    .action-icon {
-      color: #999;
-      cursor: pointer;
-      padding: 4px;
-      font-size: 14px;
-    }
-
-    .action-icon:hover {
-      color: #E53935;
-    }
-
-    /* Cooking Selector Wheel & Cards */
-    .wheel-card {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      text-align: center;
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow);
-      margin-bottom: 20px;
-    }
-
-    .wheel-card h4 {
-      font-size: 16px;
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .spin-result {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--primary-orange);
-      margin: 16px 0;
-      min-height: 30px;
-    }
-
-    .spin-btn {
-      background: linear-gradient(135deg, var(--accent-yellow), var(--primary-orange));
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 30px;
-      font-weight: 800;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(255, 184, 0, 0.4);
-    }
-
-    .recipes-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .recipe-card {
-      background: white;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-
-    .recipe-body {
-      padding: 14px;
-    }
-
-    .recipe-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .recipe-title {
-      font-size: 15px;
-      font-weight: 800;
-    }
-
-    .recipe-votes {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .vote-btn {
-      background: #F7F7F7;
-      border: 1px solid var(--border-color);
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .vote-btn.voted {
-      background: #FFEBE0;
-      color: var(--primary-orange);
-      border-color: var(--primary-orange);
-    }
-
-    .recipe-ingredients {
-      font-size: 12px;
-      color: var(--text-sub);
-      margin-bottom: 12px;
-      line-height: 1.5;
-    }
-
-    .recipe-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px dashed var(--border-color);
-      padding-top: 10px;
-    }
-
-    .add-ingredients-btn {
-      background: #FFF0E6;
-      color: var(--primary-orange);
-      border: none;
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    /* Notes Chat */
-    .notes-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .note-bubble {
-      background: white;
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-color);
-      position: relative;
-    }
-
-    .note-bubble.mine {
-      background: #FFF5EF;
-      border-color: #FFD4BC;
-      align-self: flex-start;
-      width: 100%;
-    }
-
-    .note-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--text-sub);
-      margin-bottom: 4px;
-      font-weight: 700;
-    }
-
-    .note-text {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-main);
-    }
-
-    /* Floating Navigation Footer */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      background: white;
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-      z-index: 200;
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: #999;
-      text-decoration: none;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav-item i {
-      font-size: 18px;
-    }
-
-    .nav-item.active {
-      color: var(--primary-orange);
-    }
-
-    /* Status Toast */
-    .toast {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: #323232;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 700;
-      z-index: 10000;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* Status indicator dot */
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #4CAF50;
-      display: inline-block;
-      margin-left: 6px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بيت العز - طلباتنا وطبخاتنا</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#FF5E00',
+                            yellow: '#FFB800',
+                            orangeLight: '#FFF2EB',
+                            yellowLight: '#FFF9E6',
+                            dark: '#1C1C1E',
+                            grayBg: '#F8F9FA'
+                        }
+                    },
+                    fontFamily: {
+                        tajawal: ['Tajawal', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #F8F9FA;
+            box-shadow: 0 0 20px rgba(0,0,0,0.08);
+            position: relative;
+            padding-bottom: 90px;
+        }
+        .pulse-btn {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-200 antialiased selection:bg-orange-200">
 
-  <!-- Status Toast Notification -->
-  <div id="toast" class="toast">تم التحديث بنجاح!</div>
+    <div class="app-container flex flex-col min-h-screen">
+        
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-3 shadow-sm">
+            <div class="flex items-center justify-between">
+                <!-- Location & App Info -->
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-brand-orangeLight flex items-center justify-center text-brand-orange text-xl shadow-inner">
+                        <i class="fa-solid font-bold fa-house-heart"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400 font-medium flex items-center gap-1">
+                            <span>التوصيل إلى</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-brand-orange"></i>
+                        </div>
+                        <h1 class="text-base font-bold text-gray-800 leading-tight">منزلنا الجميل ❤️</h1>
+                    </div>
+                </div>
 
-  <!-- Auth Modal -->
-  <div id="authOverlay" class="auth-overlay">
-    <div class="auth-card">
-      <div class="auth-logo">
-        <i class="fa-solid fa-house-chimney-user"></i>
-      </div>
-      <div class="auth-title">بيت العز</div>
-      <div class="auth-sub">اختر حسابك للمتابعة والتزامن الحقيقي</div>
+                <!-- Action Controls: Push Notifications Permission + User Switcher -->
+                <div class="flex items-center gap-2">
+                    <button id="notifBellBtn" onclick="requestNotificationPermission()" title="تفعيل الإشعارات"
+                        class="w-8 h-8 rounded-full bg-gray-100 hover:bg-orange-50 text-gray-500 hover:text-brand-orange flex items-center justify-center transition-all border border-gray-200">
+                        <i id="notifBellIcon" class="fa-solid fa-bell text-xs"></i>
+                    </button>
 
-      <div class="user-select-btn active" onclick="selectUser('أحمد')" id="btnAhmed">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div class="user-avatar" style="background: #FF5A00;">أ</div>
-          <span>أحمد (الزوج)</span>
-        </div>
-        <i class="fa-solid fa-circle-check" style="color: var(--primary-orange);"></i>
-      </div>
-
-      <div class="user-select-btn" onclick="selectUser('أريام')" id="btnAriam">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div class="user-avatar" style="background: #E91E63;">أ</div>
-          <span>أريام (الزوجة)</span>
-        </div>
-        <i class="fa-regular fa-circle"></i>
-      </div>
-
-      <button class="btn-primary" onclick="login()"><i class="fa-solid fa-right-to-bracket"></i> دخول التطبيق</button>
-    </div>
-  </div>
-
-  <!-- Main App Frame -->
-  <div class="app-container">
-    
-    <!-- Top Header -->
-    <header>
-      <div class="header-user">
-        <div class="header-avatar" id="currentAvatar">أ</div>
-        <div class="header-info">
-          <h2>مرحباً <span id="currentUserName">أحمد</span> <span class="status-dot"></span></h2>
-          <p id="partnerStatus">متصل مع أريام أونلاين</p>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="icon-btn" id="bellBtn" onclick="requestNotificationPermission()" title="تفعيل الإشعارات">
-          <i class="fa-regular fa-bell"></i>
-        </button>
-        <button class="icon-btn" onclick="switchUser()" title="تبديل المستخدم">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
-        </button>
-      </div>
-    </header>
-
-    <!-- Hero Banner -->
-    <div class="banner-wrapper">
-      <div class="hero-banner">
-        <h3>تنسيق البيت بكل سهولة 🛒</h3>
-        <p>كل الطلبات واقتراحات وجبات الطعام متزامنة أونلاين لحظة بلحظة!</p>
-      </div>
-    </div>
-
-    <!-- Category Tabs Navigation -->
-    <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('groceries', this)">
-        <i class="fa-solid fa-basket-shopping"></i> طلبات البيت
-      </button>
-      <button class="tab-btn" onclick="switchTab('cooking', this)">
-        <i class="fa-solid fa-utensils"></i> هنطبخ إيه؟
-      </button>
-      <button class="tab-btn" onclick="switchTab('notes', this)">
-        <i class="fa-solid fa-note-sticky"></i> ملاحظات
-      </button>
-    </div>
-
-    <!-- TAB 1: Groceries List -->
-    <div id="tab-groceries" class="section-content active">
-      
-      <!-- Input Bar -->
-      <div class="add-bar">
-        <input type="text" id="newItemTitle" placeholder="أضف أغراض جديدة للبيت...">
-        <select id="newItemCategory">
-          <option value="بقالة">بقالة</option>
-          <option value="خضار وفواكه">خضار</option>
-          <option value="لحوم ودواجن">لحوم</option>
-          <option value="مخبوزات">مخبوزات</option>
-          <option value="منظفات">منظفات</option>
-        </select>
-        <button class="add-btn" onclick="addGroceryItem()"><i class="fa-solid fa-plus"></i></button>
-      </div>
-
-      <!-- Categories Filter Chips -->
-      <div class="category-chips">
-        <div class="category-chip active" onclick="filterCategory('الكل', this)">الكل</div>
-        <div class="category-chip" onclick="filterCategory('بقالة', this)">🥬 بقالة</div>
-        <div class="category-chip" onclick="filterCategory('خضار وفواكه', this)">🍎 خضار وفواكه</div>
-        <div class="category-chip" onclick="filterCategory('لحوم ودواجن', this)">🍗 لحوم ودواجن</div>
-        <div class="category-chip" onclick="filterCategory('مخبوزات', this)">🥐 مخبوزات</div>
-        <div class="category-chip" onclick="filterCategory('منظفات', this)">🧼 منظفات</div>
-      </div>
-
-      <!-- Items List -->
-      <div class="items-list" id="groceryItemsList">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
-
-    <!-- TAB 2: Cooking Ideas -->
-    <div id="tab-cooking" class="section-content">
-      
-      <!-- Selector Wheel -->
-      <div class="wheel-card">
-        <h4>عجلة الحظ: هنطبخ إيه النهاردة؟ 🎲</h4>
-        <div class="spin-result" id="wheelResult">اضغط للتدوير واختيار وجبة عشوائية!</div>
-        <button class="spin-btn" onclick="spinWheel()"><i class="fa-solid fa-rotate"></i> اختيار وجبة اليوم</button>
-      </div>
-
-      <!-- Add New Recipe -->
-      <div class="add-bar">
-        <input type="text" id="newRecipeTitle" placeholder="اقترح وجبة جديدة...">
-        <input type="text" id="newRecipeIngredients" placeholder="المكونات (بينها فاصلة)" style="flex:1;">
-        <button class="add-btn" onclick="addRecipe()"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-
-      <!-- Recipe List -->
-      <div class="recipes-grid" id="recipesList">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
-
-    <!-- TAB 3: Notes -->
-    <div id="tab-notes" class="section-content">
-      <div class="add-bar">
-        <input type="text" id="newNoteText" placeholder="اكتب ملاحظة سريعة لأريام/أحمد...">
-        <button class="add-btn" onclick="addNote()"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-
-      <div class="notes-container" id="notesList">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
-
-    <!-- Bottom Navigation Bar -->
-    <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchTab('groceries', null, 0)">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span>الطلبات</span>
-      </div>
-      <div class="nav-item" onclick="switchTab('cooking', null, 1)">
-        <i class="fa-solid fa-kitchen-set"></i>
-        <span>طبخ اليوم</span>
-      </div>
-      <div class="nav-item" onclick="switchTab('notes', null, 2)">
-        <i class="fa-solid fa-comment-dots"></i>
-        <span>ملاحظات</span>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Firebase v10 SDKs (Modular via CDN) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyCzRPZ5HFE95Gge_PPjglx9SJVMwBIYyKo",
-      authDomain: "design-control.firebaseapp.com",
-      projectId: "design-control",
-      storageBucket: "design-control.firebasestorage.app",
-      messagingSenderId: "924894268278",
-      appId: "1:924894268278:web:542d4933750845d45e0857",
-      measurementId: "G-W38F1MGP2J"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Global State
-    let currentUser = localStorage.getItem('house_app_user') || 'أحمد';
-    let selectedUserForAuth = 'أحمد';
-    let activeCategory = 'الكل';
-    let groceryItems = {};
-    let recipes = {};
-    let notes = {};
-
-    // Expose Functions to Window Global Scope
-    window.selectUser = function(name) {
-      selectedUserForAuth = name;
-      document.getElementById('btnAhmed').classList.toggle('active', name === 'أحمد');
-      document.getElementById('btnAriam').classList.toggle('active', name === 'أريام');
-      
-      document.getElementById('btnAhmed').querySelector('i').className = name === 'أحمد' ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle';
-      document.getElementById('btnAriam').querySelector('i').className = name === 'أريام' ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle';
-    };
-
-    window.login = function() {
-      currentUser = selectedUserForAuth;
-      localStorage.setItem('house_app_user', currentUser);
-      document.getElementById('authOverlay').style.display = 'none';
-      updateUserUI();
-      showToast(`مرحباً بك يا ${currentUser}!`);
-    };
-
-    window.switchUser = function() {
-      document.getElementById('authOverlay').style.display = 'flex';
-    };
-
-    function updateUserUI() {
-      document.getElementById('currentUserName').innerText = currentUser;
-      document.getElementById('currentAvatar').innerText = currentUser.charAt(0);
-      document.getElementById('currentAvatar').style.background = currentUser === 'أحمد' ? '#FF5A00' : '#E91E63';
-      const partner = currentUser === 'أحمد' ? 'أريام' : 'أحمد';
-      document.getElementById('partnerStatus').innerText = `متصل مع ${partner} أونلاين`;
-    }
-
-    // Tab Switching
-    window.switchTab = function(tabName, btnElement, navIndex) {
-      document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-
-      if(btnElement) {
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        btnElement.classList.add('active');
-      }
-
-      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-      navItems.forEach(el => el.classList.remove('active'));
-      if(navIndex !== undefined) {
-        navItems[navIndex].classList.add('active');
-      }
-    };
-
-    // Firebase Realtime Listeners
-    function initFirebaseSync() {
-      // Listen to Groceries
-      onValue(ref(db, 'groceries'), (snapshot) => {
-        groceryItems = snapshot.val() || {};
-        renderGroceries();
-      });
-
-      // Listen to Recipes
-      onValue(ref(db, 'recipes'), (snapshot) => {
-        recipes = snapshot.val() || {};
-        renderRecipes();
-      });
-
-      // Listen to Notes
-      onValue(ref(db, 'notes'), (snapshot) => {
-        notes = snapshot.val() || {};
-        renderNotes();
-      });
-    }
-
-    // --- Groceries Logic ---
-    window.addGroceryItem = function() {
-      const input = document.getElementById('newItemTitle');
-      const catSelect = document.getElementById('newItemCategory');
-      const title = input.value.trim();
-      if(!title) return;
-
-      const newItemRef = push(ref(db, 'groceries'));
-      set(newItemRef, {
-        title: title,
-        category: catSelect.value,
-        addedBy: currentUser,
-        completed: false,
-        timestamp: Date.now()
-      });
-
-      input.value = '';
-      sendNotification("طلب جديد", `قام ${currentUser} بإضافة: ${title}`);
-      showToast("تم إضافة الغرض بنجاح!");
-    };
-
-    window.toggleGroceryItem = function(id, currentStatus) {
-      update(ref(db, `groceries/${id}`), {
-        completed: !currentStatus
-      });
-    };
-
-    window.deleteGroceryItem = function(id) {
-      remove(ref(db, `groceries/${id}`));
-      showToast("تم حذف الغرض!");
-    };
-
-    window.filterCategory = function(cat, chip) {
-      activeCategory = cat;
-      document.querySelectorAll('.category-chip').forEach(el => el.classList.remove('active'));
-      chip.classList.add('active');
-      renderGroceries();
-    };
-
-    function renderGroceries() {
-      const container = document.getElementById('groceryItemsList');
-      container.innerHTML = '';
-
-      const keys = Object.keys(groceryItems);
-      if(keys.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 30px; color: #999; font-weight:700;">لا توجد طلبات حالياً! 🎉</div>`;
-        return;
-      }
-
-      keys.forEach(key => {
-        const item = groceryItems[key];
-        if(activeCategory !== 'الكل' && item.category !== activeCategory) return;
-
-        const card = document.createElement('div');
-        card.className = `item-card ${item.completed ? 'completed' : ''}`;
-        card.innerHTML = `
-          <div class="item-left">
-            <div class="custom-checkbox" onclick="toggleGroceryItem('${key}', ${item.completed})">
-              ${item.completed ? '<i class="fa-solid fa-check"></i>' : ''}
+                    <button id="userToggleBtn" onclick="toggleUser()" class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition-all duration-300 border border-gray-200">
+                        <img id="userAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ffb800" class="w-7 h-7 rounded-full bg-white border border-brand-yellow" alt="Avatar">
+                        <span id="userName" class="text-xs font-bold text-gray-700">أحمد (الزوج)</span>
+                        <i class="fa-solid fa-arrows-rotate text-xs text-brand-orange"></i>
+                    </button>
+                </div>
             </div>
-            <div>
-              <div class="item-title">${item.title}</div>
-              <div class="item-meta">
-                <span><i class="fa-solid fa-tag"></i> ${item.category}</span>
-                <span class="badge-added-by">${item.addedBy}</span>
-              </div>
-            </div>
-          </div>
-          <div class="item-actions">
-            <i class="fa-solid fa-trash-can action-icon" onclick="deleteGroceryItem('${key}')"></i>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+        </header>
 
-    // --- Cooking Logic ---
-    window.addRecipe = function() {
-      const titleInput = document.getElementById('newRecipeTitle');
-      const ingInput = document.getElementById('newRecipeIngredients');
-      const title = titleInput.value.trim();
-      const ingredients = ingInput.value.trim();
+        <main class="flex-1 px-4 pt-4 pb-6">
 
-      if(!title) return;
+            <!-- PAGE 1: GROCERY LIST VIEW -->
+            <section id="tab-grocery" class="space-y-5">
+                
+                <!-- Category Grid Banner -->
+                <div>
+                    <h2 class="text-sm font-extrabold text-gray-800 mb-2.5 flex items-center justify-between">
+                        <span>تسوق حسب الفئة</span>
+                        <span class="text-xs text-brand-orange font-medium">كل الأقسام</span>
+                    </h2>
+                    <div class="grid grid-cols-4 gap-2.5">
+                        <button onclick="filterCategory('all')" class="cat-btn flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-brand-orange transition-all active:scale-95 group">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🛍️</span>
+                            <span class="text-[11px] font-bold text-gray-700">الكل</span>
+                        </button>
+                        <button onclick="filterCategory('veggies')" class="cat-btn flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-brand-orange transition-all active:scale-95 group">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🥦</span>
+                            <span class="text-[11px] font-bold text-gray-700">خضار وفاكهة</span>
+                        </button>
+                        <button onclick="filterCategory('dairy')" class="cat-btn flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-brand-orange transition-all active:scale-95 group">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🧀</span>
+                            <span class="text-[11px] font-bold text-gray-700">بقالة وألبان</span>
+                        </button>
+                        <button onclick="filterCategory('meats')" class="cat-btn flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-brand-orange transition-all active:scale-95 group">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🍗</span>
+                            <span class="text-[11px] font-bold text-gray-700">لحوم ودواجن</span>
+                        </button>
+                    </div>
+                </div>
 
-      const newRecipeRef = push(ref(db, 'recipes'));
-      set(newRecipeRef, {
-        title: title,
-        ingredients: ingredients,
-        addedBy: currentUser,
-        votes: 0,
-        voters: {}
-      });
+                <!-- Add New Item Card -->
+                <div class="bg-gradient-to-r from-brand-orange to-orange-600 rounded-3xl p-4 text-white shadow-lg shadow-orange-500/20">
+                    <h3 class="text-xs font-bold opacity-90 mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        <span>إضافة غرض جديد للسلة</span>
+                    </h3>
+                    <form id="addGroceryForm" onsubmit="handleAddGrocery(event)" class="space-y-2.5">
+                        <div class="flex gap-2">
+                            <input type="text" id="groceryName" placeholder="مثال: طماطم، حليب، منظف..." required
+                                class="w-full px-3.5 py-2.5 text-sm rounded-xl text-gray-800 bg-white/95 focus:bg-white border-0 outline-none placeholder-gray-400 shadow-inner">
+                            <select id="groceryCategory" class="bg-white/95 text-gray-800 text-xs rounded-xl px-2.5 font-bold outline-none border-0">
+                                <option value="veggies">خضار/فاكهة</option>
+                                <option value="dairy">بقالة/ألبان</option>
+                                <option value="meats">لحوم/دواجن</option>
+                                <option value="bakery">مخبوزات</option>
+                                <option value="clean">نظافة</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <div class="flex items-center gap-2 bg-white/10 p-1 rounded-xl backdrop-blur-sm">
+                                <label class="text-xs font-medium cursor-pointer px-2 py-1 rounded-lg flex items-center gap-1">
+                                    <input type="checkbox" id="groceryUrgent" class="accent-brand-yellow w-3.5 h-3.5 rounded">
+                                    <span class="text-xs font-bold text-amber-200">🚨 عاجل جداً</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="bg-brand-yellow hover:bg-yellow-400 text-gray-900 font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1.5">
+                                <span>إضافة للقائمة</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-      titleInput.value = '';
-      ingInput.value = '';
-      sendNotification("وجبة جديدة", `اقترح ${currentUser} وجبة: ${title}`);
-      showToast("تم إضافة الوجبة!");
-    };
+                <!-- Shopping Progress Bar -->
+                <div class="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-sm space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-gray-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-basket-shopping text-brand-orange"></i>
+                            إنجاز المشتريات
+                        </span>
+                        <span id="groceryProgressText" class="font-extrabold text-brand-orange">0/0 (0%)</span>
+                    </div>
+                    <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                        <div id="groceryProgressBar" class="bg-gradient-to-r from-brand-yellow to-brand-orange h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
 
-    window.voteRecipe = function(id) {
-      const recipe = recipes[id];
-      if(!recipe) return;
+                <!-- Grocery Items List -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-extrabold text-gray-500 uppercase tracking-wider">قائمة الأغراض المطلوبة</h3>
+                        <button onclick="clearCompletedGrocery()" class="text-[11px] text-gray-400 hover:text-red-500 font-medium transition-colors">
+                            مسح المكتمل <i class="fa-solid fa-trash-can text-[10px]"></i>
+                        </button>
+                    </div>
 
-      const voters = recipe.voters || {};
-      const hasVoted = voters[currentUser];
+                    <div id="groceryListContainer" class="space-y-2">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </section>
 
-      if(hasVoted) {
-        delete voters[currentUser];
-        recipe.votes = (recipe.votes || 1) - 1;
-      } else {
-        voters[currentUser] = true;
-        recipe.votes = (recipe.votes || 0) + 1;
-      }
+            <!-- PAGE 2: MEAL PLANNER & IDEAS -->
+            <section id="tab-meals" class="space-y-5 hidden">
+                
+                <!-- Random Meal Picker Wheel Card -->
+                <div class="bg-gradient-to-br from-amber-500 to-brand-orange rounded-3xl p-4 text-white shadow-lg relative overflow-hidden text-center">
+                    <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+                    <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2 backdrop-blur-sm">محتارين ناكل إيه؟</span>
+                    <h2 class="text-xl font-black mb-1">عجلة اقتراح الوجبات 🎲</h2>
+                    <p class="text-xs text-orange-100 mb-4">خلي التطبيق يختار لكم وجبة غداء اليوم بشكل عشوائي!</p>
+                    
+                    <div id="selectedMealDisplay" class="bg-white/15 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl mb-4 min-h-[60px] flex items-center justify-center">
+                        <span class="text-sm font-bold text-white">اضغط على الزر للاقتراح 👇</span>
+                    </div>
 
-      update(ref(db, `recipes/${id}`), {
-        votes: recipe.votes,
-        voters: voters
-      });
-    };
+                    <button onclick="suggestRandomMeal()" class="w-full bg-white text-brand-orange hover:bg-orange-50 font-black py-3 rounded-2xl shadow-md transition-all active:scale-95 pulse-btn text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-brand-yellow"></i>
+                        <span>اقترح لي وجبة عشوائية!</span>
+                    </button>
+                </div>
 
-    window.addIngredientsToGroceries = function(ingredientsText) {
-      if(!ingredientsText) return;
-      const list = ingredientsText.split('،').join(',').split(',');
-      
-      list.forEach(ing => {
-        const item = ing.trim();
-        if(item) {
-          const newItemRef = push(ref(db, 'groceries'));
-          set(newItemRef, {
-            title: item,
-            category: 'بقالة',
-            addedBy: currentUser,
-            completed: false,
-            timestamp: Date.now()
-          });
-        }
-      });
+                <!-- Add Custom Meal Suggestion -->
+                <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-3">
+                    <h3 class="text-xs font-extrabold text-gray-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-utensils text-brand-orange"></i>
+                        <span>اقترح وجبة لليوم أو للأسبوع</span>
+                    </h3>
+                    <form onsubmit="handleAddMeal(event)" class="space-y-2">
+                        <input type="text" id="mealTitleInput" placeholder="اسم الوجبة (مثلاً: مكرونة بشاميل وبانييه)" required
+                            class="w-full px-3.5 py-2 text-sm rounded-xl border border-gray-200 outline-none focus:border-brand-orange bg-gray-50">
+                        
+                        <div class="flex gap-2">
+                            <select id="mealDayInput" class="w-1/2 px-2 py-2 text-xs font-bold rounded-xl border border-gray-200 bg-gray-50 text-gray-700 outline-none">
+                                <option value="اليوم (الغداء)">اليوم (الغداء)</option>
+                                <option value="السبت">السبت</option>
+                                <option value="الأحد">الأحد</option>
+                                <option value="الإثنين">الإثنين</option>
+                                <option value="الثلاثاء">الثلاثاء</option>
+                                <option value="الأربعاء">الأربعاء</option>
+                                <option value="الخميس">الخميس</option>
+                                <option value="الجمعة">الجمعة</option>
+                            </select>
 
-      showToast("تم تحويل المكونات لسلة الطلبات!");
-      switchTab('groceries', null, 0);
-    };
+                            <input type="text" id="mealIngredientsInput" placeholder="المكونات (مفصولة بفاصلة)" 
+                                class="w-1/2 px-3 py-2 text-xs rounded-xl border border-gray-200 outline-none focus:border-brand-orange bg-gray-50">
+                        </div>
 
-    window.spinWheel = function() {
-      const keys = Object.keys(recipes);
-      if(keys.length === 0) {
-        document.getElementById('wheelResult').innerText = "قم بإضافة وجبات أولاً!";
-        return;
-      }
+                        <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold text-xs py-2.5 rounded-xl transition-all active:scale-95">
+                            إضافة الوجبة للتصويت 🗳️
+                        </button>
+                    </form>
+                </div>
 
-      let count = 0;
-      const interval = setInterval(() => {
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        document.getElementById('wheelResult').innerText = recipes[randomKey].title;
-        count++;
-        if(count > 12) {
-          clearInterval(interval);
-          showToast(`تم اختيار: ${document.getElementById('wheelResult').innerText}`);
-        }
-      }, 100);
-    };
+                <!-- Suggested Meals List & Voting -->
+                <div class="space-y-3">
+                    <h3 class="text-xs font-extrabold text-gray-500 uppercase tracking-wider">جدول الوجبات والتصويت</h3>
+                    <div id="mealsListContainer" class="space-y-3">
+                        <!-- Meals List Rendered JS -->
+                    </div>
+                </div>
+            </section>
 
-    function renderRecipes() {
-      const container = document.getElementById('recipesList');
-      container.innerHTML = '';
+            <!-- PAGE 3: QUICK NOTES VIEW -->
+            <section id="tab-notes" class="space-y-4 hidden">
+                <div class="bg-brand-yellowLight border border-amber-200/60 p-4 rounded-3xl space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">📌</span>
+                        <h2 class="text-sm font-bold text-amber-900">ملاحظات ورسائل سريعة</h2>
+                    </div>
+                    <p class="text-xs text-amber-700 leading-relaxed">مكان مخصص للملاحظات والتنبيهات السريعة بين أحمد وأريام لتسهيل أمور البيت ❤️</p>
+                </div>
 
-      const keys = Object.keys(recipes);
-      if(keys.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 20px; color: #999;">لا توجد اقتراحات وجبات، أضف أول وجبة!</div>`;
-        return;
-      }
+                <!-- Add Note Form -->
+                <form onsubmit="handleAddNote(event)" class="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-sm flex gap-2">
+                    <input type="text" id="noteInput" placeholder="اكتب ملاحظة لزوجك/زوجتك..." required
+                        class="flex-1 px-3.5 py-2 text-sm rounded-xl border border-gray-200 outline-none focus:border-brand-orange bg-gray-50">
+                    <button type="submit" class="bg-brand-orange hover:bg-orange-600 text-white font-bold text-xs px-4 rounded-xl transition-all active:scale-95">
+                        إرسال 💌
+                    </button>
+                </form>
 
-      keys.forEach(key => {
-        const recipe = recipes[key];
-        const voters = recipe.voters || {};
-        const isVoted = voters[currentUser];
+                <!-- Notes List Container -->
+                <div id="notesContainer" class="grid grid-cols-1 gap-2.5">
+                    <!-- Notes rendered here -->
+                </div>
+            </section>
 
-        const card = document.createElement('div');
-        card.className = 'recipe-card';
-        card.innerHTML = `
-          <div class="recipe-body">
-            <div class="recipe-header">
-              <div class="recipe-title">${recipe.title}</div>
-              <div class="recipe-votes">
-                <button class="vote-btn ${isVoted ? 'voted' : ''}" onclick="voteRecipe('${key}')">
-                  <i class="fa-solid fa-heart"></i> ${recipe.votes || 0}
+        </main>
+
+        <!-- Fixed Bottom Navigation Bar -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white border-t border-gray-100 shadow-lg px-3 py-2 z-50 rounded-t-3xl">
+            <div class="grid grid-cols-3 gap-1">
+                <button onclick="switchTab('grocery')" id="nav-grocery" class="nav-tab flex flex-col items-center py-1.5 px-2 rounded-2xl transition-all text-brand-orange font-bold">
+                    <i class="fa-solid fa-basket-shopping text-lg mb-0.5"></i>
+                    <span class="text-[11px]">طلبات البيت</span>
                 </button>
-              </div>
+
+                <button onclick="switchTab('meals')" id="nav-meals" class="nav-tab flex flex-col items-center py-1.5 px-2 rounded-2xl transition-all text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-utensils text-lg mb-0.5"></i>
+                    <span class="text-[11px]">هنطبخ إيه؟</span>
+                </button>
+
+                <button onclick="switchTab('notes')" id="nav-notes" class="nav-tab flex flex-col items-center py-1.5 px-2 rounded-2xl transition-all text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-note-sticky text-lg mb-0.5"></i>
+                    <span class="text-[11px]">نوتس سريعة</span>
+                </button>
             </div>
-            ${recipe.ingredients ? `<div class="recipe-ingredients"><i class="fa-solid fa-list-check"></i> المكونات: ${recipe.ingredients}</div>` : ''}
-            <div class="recipe-footer">
-              <span style="font-size:11px; color:#999;">بواسطة: ${recipe.addedBy}</span>
-              ${recipe.ingredients ? `<button class="add-ingredients-btn" onclick="addIngredientsToGroceries('${recipe.ingredients}')">+ أضف المكونات للطلبات</button>` : ''}
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+        </nav>
 
-    // --- Notes Logic ---
-    window.addNote = function() {
-      const input = document.getElementById('newNoteText');
-      const text = input.value.trim();
-      if(!text) return;
+        <!-- Notification Toast Box -->
+        <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl z-50 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2 max-w-[90%]">
+            <i class="fa-solid fa-bell text-brand-yellow"></i>
+            <span id="toastMsg">تمت العملية بنجاح!</span>
+        </div>
 
-      const newNoteRef = push(ref(db, 'notes'));
-      set(newNoteRef, {
-        text: text,
-        sender: currentUser,
-        time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
-      });
+    </div>
 
-      input.value = '';
-      sendNotification("ملاحظة جديدة", `${currentUser}: ${text}`);
-    };
+    <!-- Firebase SDKs (Module) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    function renderNotes() {
-      const container = document.getElementById('notesList');
-      container.innerHTML = '';
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzRPZ5HFE95Gge_PPjglx9SJVMwBIYyKo",
+            authDomain: "design-control.firebaseapp.com",
+            projectId: "design-control",
+            storageBucket: "design-control.firebasestorage.app",
+            messagingSenderId: "924894268278",
+            appId: "1:924894268278:web:542d4933750845d45e0857",
+            measurementId: "G-W38F1MGP2J"
+        };
 
-      const keys = Object.keys(notes);
-      if(keys.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 20px; color: #999;">لا توجد ملاحظات، أرسل كلمة حلوة ❤️</div>`;
-        return;
-      }
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-      keys.forEach(key => {
-        const note = notes[key];
-        const card = document.createElement('div');
-        card.className = `note-bubble ${note.sender === currentUser ? 'mine' : ''}`;
-        card.innerHTML = `
-          <div class="note-header">
-            <span>${note.sender}</span>
-            <span>${note.time}</span>
-          </div>
-          <div class="note-text">${note.text}</div>
-        `;
-        container.appendChild(card);
-      });
-    }
+        // --- DEVICE IDENTIFIER (FOR NOTIFICATION ROUTING) ---
+        let deviceId = localStorage.getItem('app_device_id');
+        if (!deviceId) {
+            deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            localStorage.setItem('app_device_id', deviceId);
+        }
 
-    // --- Notifications & Toasts ---
-    window.requestNotificationPermission = function() {
-      if ('Notification' in window) {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            document.getElementById('bellBtn').classList.add('active-bell');
-            showToast("تم تفعيل الإشعارات بنجاح!");
-          }
+        // --- APP STATE & INITIAL DATA ---
+        let currentUser = localStorage.getItem('app_user') || 'أحمد (الزوج)';
+        let activeTab = 'grocery';
+        let currentCategoryFilter = 'all';
+
+        let groceryList = [];
+        let mealsList = [];
+        let notesList = [];
+
+        let isInitialGroceryLoad = true;
+        let isInitialMealsLoad = true;
+        let isInitialNotesLoad = true;
+
+        const presetRandomMeals = [
+            'مكرونة بشاميل وسلطة خضراء',
+            'كفتة مشوية وباباخنوج وأرز معمر',
+            'صينية بطاطس بالفراخ وأرز بشعرية',
+            'ملوخية بالأرانب/دجاج وأرز أبيض',
+            'حواوشي بلدي وبطاطس محمرة',
+            'سمك مقلي وأرز صيادية وطحينة',
+            'كشري مصري بيتي بالدقة والمكرونة',
+            'شاورما دجاج وثومية وخبز صاج'
+        ];
+
+        // --- REALTIME DATABASE LISTENERS ---
+        const groceryRef = ref(db, 'grocery');
+        const mealsRef = ref(db, 'meals');
+        const notesRef = ref(db, 'notes');
+
+        // Listen for Grocery Updates
+        onValue(groceryRef, (snapshot) => {
+            const data = snapshot.val();
+            const loaded = [];
+            let latestItem = null;
+
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const item = { id: key, ...data[key] };
+                    loaded.push(item);
+                    if (!latestItem || (item.createdAt && item.createdAt > (latestItem.createdAt || 0))) {
+                        latestItem = item;
+                    }
+                });
+            }
+
+            groceryList = loaded.reverse();
+            renderGrocery();
+
+            if (!isInitialGroceryLoad && latestItem) {
+                if (latestItem.senderDeviceId !== deviceId) {
+                    const msg = `أضاف(ت) ${latestItem.addedBy} غرضاً جديداً: (${latestItem.name})`;
+                    showToast(msg);
+                    sendNativeNotification("بيت العز - طلبات جديدة 🛒", msg);
+                }
+            }
+            isInitialGroceryLoad = false;
         });
-      }
-    };
 
-    function sendNotification(title, body) {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, {
-          body: body,
-          icon: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png'
+        // Listen for Meals Updates
+        onValue(mealsRef, (snapshot) => {
+            const data = snapshot.val();
+            const loaded = [];
+            let latestMeal = null;
+
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const item = { id: key, ...data[key] };
+                    loaded.push(item);
+                    if (!latestMeal || (item.createdAt && item.createdAt > (latestMeal.createdAt || 0))) {
+                        latestMeal = item;
+                    }
+                });
+            }
+
+            mealsList = loaded.reverse();
+            renderMeals();
+
+            if (!isInitialMealsLoad && latestMeal) {
+                if (latestMeal.senderDeviceId !== deviceId) {
+                    const msg = `اقترح(ت) ${latestMeal.addedBy} وجبة جديدة: (${latestMeal.title})`;
+                    showToast(msg);
+                    sendNativeNotification("بيت العز - جدول الوجبات 🍽️", msg);
+                }
+            }
+            isInitialMealsLoad = false;
         });
-      }
-    }
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.innerText = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
+        // Listen for Notes Updates
+        onValue(notesRef, (snapshot) => {
+            const data = snapshot.val();
+            const loaded = [];
+            let latestNote = null;
 
-    // App Initialization
-    window.onload = function() {
-      if(currentUser) {
-        document.getElementById('authOverlay').style.display = 'none';
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const item = { id: key, ...data[key] };
+                    loaded.push(item);
+                    if (!latestNote || (item.createdAt && item.createdAt > (latestNote.createdAt || 0))) {
+                        latestNote = item;
+                    }
+                });
+            }
+
+            notesList = loaded.reverse();
+            renderNotes();
+
+            if (!isInitialNotesLoad && latestNote) {
+                if (latestNote.senderDeviceId !== deviceId) {
+                    const msg = `أرسل(ت) ${latestNote.author} ملاحظة: (${latestNote.text})`;
+                    showToast(msg);
+                    sendNativeNotification("بيت العز - ملاحظة جديدة 💌", msg);
+                }
+            }
+            isInitialNotesLoad = false;
+        });
+
+        // --- EXPOSE FUNCTIONS TO GLOBAL WINDOW OBJECT FOR HTML INLINE EVENTS ---
+        window.toggleUser = function() {
+            if (currentUser.includes('أحمد')) {
+                currentUser = 'أريام (الزوجة)';
+            } else {
+                currentUser = 'أحمد (الزوج)';
+            }
+            localStorage.setItem('app_user', currentUser);
+            updateUserUI();
+            showToast(`تم التبديل إلى حساب: ${currentUser}`);
+            renderGrocery();
+            renderMeals();
+        };
+
+        window.switchTab = function(tabName) {
+            activeTab = tabName;
+            document.getElementById('tab-grocery').classList.add('hidden');
+            document.getElementById('tab-meals').classList.add('hidden');
+            document.getElementById('tab-notes').classList.add('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('text-brand-orange', 'font-bold');
+                btn.classList.add('text-gray-400');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            activeNav.classList.remove('text-gray-400');
+            activeNav.classList.add('text-brand-orange', 'font-bold');
+        };
+
+        window.filterCategory = function(cat) {
+            currentCategoryFilter = cat;
+            renderGrocery();
+        };
+
+        window.handleAddGrocery = function(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('groceryName');
+            const catInput = document.getElementById('groceryCategory');
+            const urgentInput = document.getElementById('groceryUrgent');
+
+            const itemTitle = nameInput.value.trim();
+            const newItemRef = push(ref(db, 'grocery'));
+
+            set(newItemRef, {
+                name: itemTitle,
+                category: catInput.value,
+                urgent: urgentInput.checked,
+                checked: false,
+                addedBy: currentUser,
+                senderDeviceId: deviceId,
+                createdAt: Date.now()
+            });
+
+            nameInput.value = '';
+            urgentInput.checked = false;
+            showToast('تمت إضافة الغرض للقائمة!');
+        };
+
+        window.toggleGroceryItem = function(id) {
+            const item = groceryList.find(i => i.id === id);
+            if (item) {
+                const itemRef = ref(db, `grocery/${id}`);
+                update(itemRef, { checked: !item.checked });
+            }
+        };
+
+        window.deleteGroceryItem = function(id) {
+            remove(ref(db, `grocery/${id}`));
+            showToast('تم حذف الغرض');
+        };
+
+        window.clearCompletedGrocery = function() {
+            groceryList.forEach(item => {
+                if (item.checked) {
+                    remove(ref(db, `grocery/${item.id}`));
+                }
+            });
+            showToast('تم مسح العناصر المكتملة');
+        };
+
+        window.suggestRandomMeal = function() {
+            const displayBox = document.getElementById('selectedMealDisplay');
+            displayBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl text-white"></i>';
+            
+            setTimeout(() => {
+                const randomChoice = presetRandomMeals[Math.floor(Math.random() * presetRandomMeals.length)];
+                displayBox.innerHTML = `
+                    <div class="text-center animate-bounce">
+                        <span class="text-xs text-amber-200 block">الاقتراح المميز لليوم:</span>
+                        <span class="text-base font-black text-white">${randomChoice} 🎉</span>
+                    </div>
+                `;
+            }, 500);
+        };
+
+        window.handleAddMeal = function(e) {
+            e.preventDefault();
+            const titleInput = document.getElementById('mealTitleInput');
+            const dayInput = document.getElementById('mealDayInput');
+            const ingredientsInput = document.getElementById('mealIngredientsInput');
+
+            const mealTitle = titleInput.value.trim();
+            const ingredientsArray = ingredientsInput.value
+                ? ingredientsInput.value.split(',').map(i => i.trim()).filter(i => i.length > 0)
+                : [];
+
+            const newMealRef = push(ref(db, 'meals'));
+            set(newMealRef, {
+                title: mealTitle,
+                day: dayInput.value,
+                ingredients: ingredientsArray,
+                upVotes: [currentUser],
+                downVotes: [],
+                addedBy: currentUser,
+                senderDeviceId: deviceId,
+                createdAt: Date.now()
+            });
+
+            titleInput.value = '';
+            ingredientsInput.value = '';
+            showToast('تمت إضافة الوجبة لجدول التصويت!');
+        };
+
+        window.voteMeal = function(mealId, type) {
+            const meal = mealsList.find(m => m.id === mealId);
+            if (!meal) return;
+
+            let up = meal.upVotes || [];
+            let down = meal.downVotes || [];
+
+            if (type === 'up') {
+                if (!up.includes(currentUser)) up.push(currentUser);
+                down = down.filter(u => u !== currentUser);
+            } else {
+                if (!down.includes(currentUser)) down.push(currentUser);
+                up = up.filter(u => u !== currentUser);
+            }
+
+            const mealRef = ref(db, `meals/${mealId}`);
+            update(mealRef, { upVotes: up, downVotes: down });
+        };
+
+        window.addMealIngredientsToGrocery = function(mealId) {
+            const meal = mealsList.find(m => m.id === mealId);
+            if (!meal || !meal.ingredients || meal.ingredients.length === 0) {
+                showToast('لا توجد مكونات مسجلة لهذه الوجبة!');
+                return;
+            }
+
+            let addedCount = 0;
+            meal.ingredients.forEach(ing => {
+                const newItemRef = push(ref(db, 'grocery'));
+                set(newItemRef, {
+                    name: ing,
+                    category: 'veggies',
+                    urgent: false,
+                    checked: false,
+                    addedBy: `مكونات (${meal.title})`,
+                    senderDeviceId: deviceId,
+                    createdAt: Date.now()
+                });
+                addedCount++;
+            });
+
+            showToast(`تمت إضافة ${addedCount} مكونات لسلة الطلبات 🛒`);
+        };
+
+        window.deleteMeal = function(id) {
+            remove(ref(db, `meals/${id}`));
+            showToast('تم حذف الوجبة');
+        };
+
+        window.handleAddNote = function(e) {
+            e.preventDefault();
+            const input = document.getElementById('noteInput');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            const newNoteRef = push(ref(db, 'notes'));
+            set(newNoteRef, {
+                text: text,
+                author: currentUser,
+                date: 'اليوم ' + new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                senderDeviceId: deviceId,
+                createdAt: Date.now()
+            });
+
+            input.value = '';
+            showToast('تمت إضافة الملاحظة!');
+        };
+
+        window.deleteNote = function(id) {
+            remove(ref(db, `notes/${id}`));
+            showToast('تم حذف الملاحظة');
+        };
+
+        window.requestNotificationPermission = function() {
+            if (!("Notification" in window)) {
+                showToast("متصفحك لا يدعم إشعارات النظام ⚠️");
+                return;
+            }
+
+            Notification.requestPermission().then(permission => {
+                checkNotificationPermissionStatus();
+                if (permission === "granted") {
+                    showToast("تم تفعيل إشعارات المتصفح بنجاح! 🔔");
+                    sendNativeNotification("بيت العز ❤️", "أهلاً بك! ستصلك إشعارات وتحديثات طلبات المنزل فوراً.");
+                } else {
+                    showToast("لم يتم إعطاء صلاحية الإشعارات");
+                }
+            });
+        };
+
+        // --- HELPER FUNCTIONS ---
+        function updateUserUI() {
+            const userNameEl = document.getElementById('userName');
+            const userAvatarEl = document.getElementById('userAvatar');
+            userNameEl.textContent = currentUser;
+
+            if (currentUser.includes('أحمد')) {
+                userAvatarEl.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ffb800";
+            } else {
+                userAvatarEl.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Aryam&backgroundColor=ff5e00";
+            }
+        }
+
+        function checkNotificationPermissionStatus() {
+            const bellIcon = document.getElementById('notifBellIcon');
+            const bellBtn = document.getElementById('notifBellBtn');
+            
+            if (!("Notification" in window)) {
+                bellBtn.style.display = "none";
+                return;
+            }
+
+            if (Notification.permission === "granted") {
+                bellIcon.className = "fa-solid fa-bell text-brand-orange";
+                bellBtn.title = "الإشعارات مفعلة";
+            } else if (Notification.permission === "denied") {
+                bellIcon.className = "fa-solid fa-bell-slash text-red-400";
+                bellBtn.title = "الإشعارات محظورة في متصفحك";
+            } else {
+                bellIcon.className = "fa-solid fa-bell text-gray-400";
+            }
+        }
+
+        function sendNativeNotification(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
+                        dir: 'rtl'
+                    });
+                } catch(e) {
+                    console.log("Notification error:", e);
+                }
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.textContent = message;
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function renderGrocery() {
+            const container = document.getElementById('groceryListContainer');
+            container.innerHTML = '';
+
+            let filtered = groceryList;
+            if (currentCategoryFilter !== 'all') {
+                filtered = groceryList.filter(i => i.category === currentCategoryFilter);
+            }
+
+            const total = groceryList.length;
+            const completed = groceryList.filter(i => i.checked).length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            
+            document.getElementById('groceryProgressBar').style.width = `${percent}%`;
+            document.getElementById('groceryProgressText').textContent = `${completed}/${total} (${percent}%)`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400">
+                        <i class="fa-solid fa-basket-shopping text-3xl mb-2 text-gray-300"></i>
+                        <p class="text-xs font-bold">لا توجد طلبات في هذه الفئة حالياً</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const categoryBadge = getCategoryEmoji(item.category);
+                const isUrgent = item.urgent;
+
+                const itemCard = document.createElement('div');
+                itemCard.className = `flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                    item.checked ? 'bg-gray-50 border-gray-200 opacity-60' : 'bg-white border-gray-100 shadow-sm hover:border-brand-yellow'
+                }`;
+
+                itemCard.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1">
+                        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleGroceryItem('${item.id}')"
+                            class="w-5 h-5 rounded-lg accent-brand-orange cursor-pointer">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold ${item.checked ? 'line-through text-gray-400' : 'text-gray-800'}">
+                                ${item.name}
+                            </span>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md font-medium">${categoryBadge}</span>
+                                <span class="text-[10px] text-gray-400">بواسطة: ${item.addedBy}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${isUrgent && !item.checked ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">عاجل 🔥</span>' : ''}
+                        <button onclick="deleteGroceryItem('${item.id}')" class="text-gray-300 hover:text-red-500 p-1 transition-colors">
+                            <i class="fa-solid fa-xmark text-sm"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(itemCard);
+            });
+        }
+
+        function getCategoryEmoji(cat) {
+            switch(cat) {
+                case 'veggies': return '🥦 خضار/فاكهة';
+                case 'dairy': return '🧀 بقالة/ألبان';
+                case 'meats': return '🍗 لحوم/دواجن';
+                case 'bakery': return '🍞 مخبوزات';
+                case 'clean': return '🧼 نظافة';
+                default: return '📦 عام';
+            }
+        }
+
+        function renderMeals() {
+            const container = document.getElementById('mealsListContainer');
+            container.innerHTML = '';
+
+            if (mealsList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400">
+                        <i class="fa-solid fa-utensils text-3xl mb-2 text-gray-300"></i>
+                        <p class="text-xs font-bold">لا توجد وجبات مقترحة حالياً</p>
+                    </div>
+                `;
+                return;
+            }
+
+            mealsList.forEach(meal => {
+                const hasUpVoted = meal.upVotes && meal.upVotes.includes(currentUser);
+                const hasDownVoted = meal.downVotes && meal.downVotes.includes(currentUser);
+
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] font-extrabold text-brand-orange bg-orange-50 px-2 py-0.5 rounded-md inline-block mb-1">
+                                📅 ${meal.day}
+                            </span>
+                            <h4 class="text-sm font-bold text-gray-800">${meal.title}</h4>
+                            <span class="text-[10px] text-gray-400">اقترحها: ${meal.addedBy}</span>
+                        </div>
+                        <button onclick="deleteMeal('${meal.id}')" class="text-gray-300 hover:text-red-500 text-xs">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+
+                    ${meal.ingredients && meal.ingredients.length > 0 ? `
+                        <div class="bg-gray-50 p-2.5 rounded-xl border border-gray-100 flex items-center justify-between">
+                            <div class="text-[11px] text-gray-600 truncate max-w-[200px]">
+                                <span class="font-bold">المكونات:</span> ${meal.ingredients.join('، ')}
+                            </div>
+                            <button onclick="addMealIngredientsToGrocery('${meal.id}')" class="text-[10px] bg-brand-yellow/20 text-yellow-800 font-bold px-2 py-1 rounded-lg hover:bg-brand-yellow transition-all">
+                                + إضافة المكونات للسلة 🛒
+                            </button>
+                        </div>
+                    ` : ''}
+
+                    <div class="flex items-center justify-between border-t border-gray-50 pt-2.5">
+                        <span class="text-[11px] font-bold text-gray-500">موافقة الزوجين:</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="voteMeal('${meal.id}', 'up')" class="flex items-center gap-1 text-xs px-3 py-1 rounded-xl transition-all ${
+                                hasUpVoted ? 'bg-green-500 text-white font-bold shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }">
+                                <span>👍 موافق</span>
+                                <span class="text-[10px]">(${meal.upVotes ? meal.upVotes.length : 0})</span>
+                            </button>
+
+                            <button onclick="voteMeal('${meal.id}', 'down')" class="flex items-center gap-1 text-xs px-3 py-1 rounded-xl transition-all ${
+                                hasDownVoted ? 'bg-red-500 text-white font-bold shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }">
+                                <span>👎 نغيرها</span>
+                                <span class="text-[10px]">(${meal.downVotes ? meal.downVotes.length : 0})</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notesContainer');
+            container.innerHTML = '';
+
+            if (notesList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400">
+                        <i class="fa-solid fa-sticky-note text-3xl mb-2 text-gray-300"></i>
+                        <p class="text-xs font-bold">لا توجد ملاحظات مسجلة</p>
+                    </div>
+                `;
+                return;
+            }
+
+            notesList.forEach(note => {
+                const card = document.createElement('div');
+                card.className = 'bg-amber-50/70 border border-amber-200/70 p-3.5 rounded-2xl shadow-sm relative group space-y-1.5';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-[10px] text-amber-800/60 font-bold">
+                        <span class="flex items-center gap-1">
+                            <i class="fa-solid fa-user text-amber-600"></i>
+                            ${note.author}
+                        </span>
+                        <span>${note.date}</span>
+                    </div>
+                    <p class="text-xs font-bold text-gray-800 leading-relaxed">${note.text}</p>
+                    <button onclick="deleteNote('${note.id}')" class="absolute left-2.5 top-2.5 text-amber-300 hover:text-red-500 transition-colors">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Initialize UI State
         updateUserUI();
-      }
-      initFirebaseSync();
-    };
-  </script>
+        checkNotificationPermissionStatus();
+    </script>
 </body>
 </html>
