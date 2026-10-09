@@ -1,1050 +1,1237 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سبورة المهام الذكية</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --accent-color: #4895ef;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --success-color: #4cc9f0;
-            --warning-color: #f8961e;
-            --danger-color: #f72585;
-            --border-radius: 12px;
-            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-            color: var(--dark-color);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .board {
-            background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .board-header {
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .board-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        .board-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background-color: var(--accent-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid white;
-            color: white;
-        }
-
-        .btn-outline:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .board-body {
-            padding: 25px;
-        }
-
-        .add-task-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            background-color: var(--light-color);
-            padding: 15px;
-            border-radius: var(--border-radius);
-        }
-
-        .task-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .task-input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        .task-categories {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .category-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid #dee2e6;
-            background-color: white;
-        }
-
-        .category-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .tasks-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .task-column {
-            background-color: var(--light-color);
-            border-radius: var(--border-radius);
-            padding: 15px;
-        }
-
-        .column-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .task-list {
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .task-card {
-            background-color: white;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-            transition: var(--transition);
-            cursor: grab;
-            position: relative;
-        }
-
-        .task-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .task-card.dragging {
-            opacity: 0.5;
-            background-color: #e9ecef;
-        }
-
-        .task-card.personal {
-            border-right: 4px solid var(--success-color);
-        }
-
-        .task-card.work {
-            border-right: 4px solid var(--accent-color);
-        }
-
-        .task-card.study {
-            border-right: 4px solid var(--warning-color);
-        }
-
-        .task-card.other {
-            border-right: 4px solid #adb5bd;
-        }
-
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .task-title {
-            font-weight: 600;
-            font-size: 1rem;
-            word-break: break-word;
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .task-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #6c757d;
-            transition: var(--transition);
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-        }
-
-        .task-btn:hover {
-            background-color: #f1f3f5;
-            color: var(--dark-color);
-        }
-
-        .task-btn.edit:hover {
-            color: var(--accent-color);
-        }
-
-        .task-btn.delete:hover {
-            color: var(--danger-color);
-        }
-
-        .task-details {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-top: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .task-date {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.8rem;
-        }
-
-        .task-priority {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .priority-high {
-            background-color: #fff0f3;
-            color: var(--danger-color);
-        }
-
-        .priority-medium {
-            background-color: #fff8e6;
-            color: #f8961e;
-        }
-
-        .priority-low {
-            background-color: #f0f8ff;
-            color: var(--accent-color);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 30px;
-            color: #6c757d;
-            grid-column: 1 / -1;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #dee2e6;
-        }
-
-        .empty-state p {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .empty-state .btn {
-            margin-top: 15px;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            border-radius: var(--border-radius);
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            transform: translateY(-20px);
-            transition: all 0.3s ease;
-        }
-
-        .modal.show .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            padding: 15px 20px;
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 1em;
-        }
-
-        .modal-footer {
-            padding: 15px 20px;
-            background-color: #f8f9fa;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        /* Drag and Drop */
-        .task-list.drop-over {
-            background-color: rgba(67, 97, 238, 0.1);
-            border-radius: 8px;
-            min-height: 100px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .board-header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-
-            .add-task-container {
-                flex-direction: column;
-            }
-
-            .tasks-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .task-card {
-            animation: fadeIn 0.3s ease forwards;
-        }
-
-        /* Dark Mode Toggle */
-        .dark-mode-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--dark-color);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            border: none;
-        }
-
-        /* Dark Mode Styles */
-        body.dark-mode {
-            background: linear-gradient(135deg, #212529 0%, #343a40 100%);
-            color: #f8f9fa;
-        }
-
-        body.dark-mode .board {
-            background-color: #343a40;
-            color: #f8f9fa;
-        }
-
-        body.dark-mode .task-card,
-        body.dark-mode .task-column,
-        body.dark-mode .add-task-container {
-            background-color: #495057;
-            color: #f8f9fa;
-        }
-
-        body.dark-mode .task-title,
-        body.dark-mode .column-title {
-            color: #f8f9fa;
-        }
-
-        body.dark-mode .task-details,
-        body.dark-mode .task-btn {
-            color: #adb5bd;
-        }
-
-        body.dark-mode .task-btn:hover {
-            background-color: #343a40;
-            color: #f8f9fa;
-        }
-
-        body.dark-mode .modal-content {
-            background-color: #495057;
-            color: #f8f9fa;
-        }
-
-        body.dark-mode .modal-footer {
-            background-color: #343a40;
-        }
-
-        body.dark-mode .form-control,
-        body.dark-mode .form-select {
-            background-color: #495057;
-            border-color: #6c757d;
-            color: #f8f9fa;
-        }
-
-        body.dark-mode .form-control:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
-        }
-
-        body.dark-mode .category-btn {
-            background-color: #495057;
-            border-color: #6c757d;
-            color: #f8f9fa;
-        }
-
-        body.dark-mode .category-btn.active {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>بيت العز - طلبات المنزل وطبخ اليوم</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-orange: #FF5A00;
+      --secondary-orange: #FF7E33;
+      --accent-yellow: #FFB800;
+      --bg-cream: #FFF8F3;
+      --card-bg: #FFFFFF;
+      --text-main: #1F1F1F;
+      --text-sub: #666666;
+      --border-color: #F0E6DF;
+      --shadow: 0 8px 24px rgba(255, 90, 0, 0.08);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Cairo', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #FAFAFA;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    /* App Container (Mobile Frame Constraint) */
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background-color: var(--bg-cream);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.1);
+      padding-bottom: 80px;
+    }
+
+    /* Auth Overlay */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-cream);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .auth-card {
+      background: #fff;
+      padding: 30px 20px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 360px;
+      border: 1px solid var(--border-color);
+    }
+
+    .auth-logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary-orange), var(--accent-yellow));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: white;
+      font-size: 36px;
+      box-shadow: 0 8px 20px rgba(255, 90, 0, 0.25);
+    }
+
+    .auth-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .auth-sub {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-bottom: 24px;
+    }
+
+    .user-select-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .user-select-btn:hover, .user-select-btn.active {
+      border-color: var(--primary-orange);
+      background: #FFF5EF;
+      color: var(--primary-orange);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 15px rgba(255, 90, 0, 0.3);
+      transition: transform 0.1s;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    /* Header */
+    header {
+      background: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--primary-orange);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .header-info h2 {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .header-info p {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #F7F7F7;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .icon-btn.active-bell {
+      background: #FFF0E6;
+      color: var(--primary-orange);
+    }
+
+    /* Banners Carousel */
+    .banner-wrapper {
+      padding: 16px 20px 0;
+    }
+
+    .hero-banner {
+      background: linear-gradient(135deg, #FF5A00, #FFB800);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(255, 90, 0, 0.2);
+    }
+
+    .hero-banner::after {
+      content: '\f2e7';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      left: -10px;
+      bottom: -20px;
+      font-size: 110px;
+      opacity: 0.15;
+    }
+
+    .hero-banner h3 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .hero-banner p {
+      font-size: 12px;
+      opacity: 0.95;
+    }
+
+    /* Main Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      padding: 16px 20px;
+      background: transparent;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 8px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background: white;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-sub);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-orange);
+      color: white;
+      border-color: var(--primary-orange);
+      box-shadow: 0 4px 12px rgba(255, 90, 0, 0.25);
+    }
+
+    /* Content Sections */
+    .section-content {
+      display: none;
+      padding: 0 20px 20px;
+    }
+
+    .section-content.active {
+      display: block;
+    }
+
+    /* Quick Add Bar */
+    .add-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: white;
+      padding: 8px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-color);
+    }
+
+    .add-bar input, .add-bar select {
+      border: none;
+      outline: none;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    .add-bar input[type="text"] {
+      flex: 1;
+    }
+
+    .add-bar select {
+      background: #F7F7F7;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      color: var(--text-sub);
+      font-size: 12px;
+    }
+
+    .add-btn {
+      background: var(--primary-orange);
+      color: white;
+      border: none;
+      width: 42px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Categories Grid */
+    .category-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+
+    .category-chip {
+      padding: 6px 14px;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      color: var(--text-sub);
+    }
+
+    .category-chip.active {
+      background: #FFF0E6;
+      border-color: var(--primary-orange);
+      color: var(--primary-orange);
+    }
+
+    /* Grocery Items List */
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item-card {
+      background: white;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      transition: all 0.2s;
+    }
+
+    .item-card.completed {
+      opacity: 0.55;
+      background: #F9F9F9;
+    }
+
+    .item-card.completed .item-title {
+      text-decoration: line-through;
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .custom-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid #DDD;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .item-card.completed .custom-checkbox {
+      background: #2E7D32;
+      border-color: #2E7D32;
+    }
+
+    .item-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .item-meta {
+      font-size: 11px;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .badge-added-by {
+      background: #F0F0F0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-icon {
+      color: #999;
+      cursor: pointer;
+      padding: 4px;
+      font-size: 14px;
+    }
+
+    .action-icon:hover {
+      color: #E53935;
+    }
+
+    /* Cooking Selector Wheel & Cards */
+    .wheel-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .wheel-card h4 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .spin-result {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--primary-orange);
+      margin: 16px 0;
+      min-height: 30px;
+    }
+
+    .spin-btn {
+      background: linear-gradient(135deg, var(--accent-yellow), var(--primary-orange));
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255, 184, 0, 0.4);
+    }
+
+    .recipes-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .recipe-card {
+      background: white;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .recipe-body {
+      padding: 14px;
+    }
+
+    .recipe-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .recipe-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .recipe-votes {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vote-btn {
+      background: #F7F7F7;
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .vote-btn.voted {
+      background: #FFEBE0;
+      color: var(--primary-orange);
+      border-color: var(--primary-orange);
+    }
+
+    .recipe-ingredients {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .recipe-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 10px;
+    }
+
+    .add-ingredients-btn {
+      background: #FFF0E6;
+      color: var(--primary-orange);
+      border: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* Notes Chat */
+    .notes-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .note-bubble {
+      background: white;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .note-bubble.mine {
+      background: #FFF5EF;
+      border-color: #FFD4BC;
+      align-self: flex-start;
+      width: 100%;
+    }
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .note-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Floating Navigation Footer */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+      z-index: 200;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #999;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+    }
+
+    .nav-item.active {
+      color: var(--primary-orange);
+    }
+
+    /* Status Toast */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #323232;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 10000;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Status indicator dot */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+      display: inline-block;
+      margin-left: 6px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="board">
-            <div class="board-header">
-                <h1 class="board-title">
-                    <i class="fas fa-tasks"></i> سبورة المهام الذكية
-                </h1>
-                <div class="board-controls">
-                    <button class="btn btn-outline" id="clear-all">
-                        <i class="fas fa-trash-alt"></i> مسح الكل
-                    </button>
-                    <button class="btn btn-primary" id="add-task-btn">
-                        <i class="fas fa-plus"></i> مهمة جديدة
-                    </button>
-                </div>
-            </div>
-            <div class="board-body">
-                <div class="add-task-container">
-                    <input type="text" class="task-input" id="quick-task-input" placeholder="أضف مهمة سريعة...">
-                    <button class="btn btn-primary" id="quick-add-btn">
-                        <i class="fas fa-plus"></i> إضافة
-                    </button>
-                </div>
 
-                <div class="task-categories">
-                    <button class="category-btn active" data-category="all">الكل</button>
-                    <button class="category-btn" data-category="personal">
-                        <i class="fas fa-user"></i> شخصية
-                    </button>
-                    <button class="category-btn" data-category="work">
-                        <i class="fas fa-briefcase"></i> عمل
-                    </button>
-                    <button class="category-btn" data-category="study">
-                        <i class="fas fa-book"></i> دراسة
-                    </button>
-                    <button class="category-btn" data-category="other">
-                        <i class="fas fa-ellipsis-h"></i> أخرى
-                    </button>
-                </div>
+  <!-- Status Toast Notification -->
+  <div id="toast" class="toast">تم التحديث بنجاح!</div>
 
-                <div class="tasks-container">
-                    <div class="task-column">
-                        <div class="column-title">
-                            <span><i class="fas fa-list-ul"></i> المهام الجديدة</span>
-                            <span class="task-count" id="todo-count">0</span>
-                        </div>
-                        <div class="task-list" id="todo-tasks" data-status="todo">
-                            <!-- Tasks will be added here -->
-                        </div>
-                    </div>
+  <!-- Auth Modal -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <i class="fa-solid fa-house-chimney-user"></i>
+      </div>
+      <div class="auth-title">بيت العز</div>
+      <div class="auth-sub">اختر حسابك للمتابعة والتزامن الحقيقي</div>
 
-                    <div class="task-column">
-                        <div class="column-title">
-                            <span><i class="fas fa-spinner"></i> قيد التنفيذ</span>
-                            <span class="task-count" id="inprogress-count">0</span>
-                        </div>
-                        <div class="task-list" id="inprogress-tasks" data-status="inprogress">
-                            <!-- Tasks will be added here -->
-                        </div>
-                    </div>
-
-                    <div class="task-column">
-                        <div class="column-title">
-                            <span><i class="fas fa-check-circle"></i> مكتملة</span>
-                            <span class="task-count" id="done-count">0</span>
-                        </div>
-                        <div class="task-list" id="done-tasks" data-status="done">
-                            <!-- Tasks will be added here -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="empty-state" id="empty-state">
-                    <i class="fas fa-clipboard-list"></i>
-                    <p>لا توجد مهام لعرضها</p>
-                    <p class="text-muted">ابدأ بإضافة مهامك الأولى لتنظيم يومك</p>
-                    <button class="btn btn-primary" id="empty-add-btn">
-                        <i class="fas fa-plus"></i> إضافة مهمة
-                    </button>
-                </div>
-            </div>
+      <div class="user-select-btn active" onclick="selectUser('أحمد')" id="btnAhmed">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="user-avatar" style="background: #FF5A00;">أ</div>
+          <span>أحمد (الزوج)</span>
         </div>
+        <i class="fa-solid fa-circle-check" style="color: var(--primary-orange);"></i>
+      </div>
+
+      <div class="user-select-btn" onclick="selectUser('أريام')" id="btnAriam">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="user-avatar" style="background: #E91E63;">أ</div>
+          <span>أريام (الزوجة)</span>
+        </div>
+        <i class="fa-regular fa-circle"></i>
+      </div>
+
+      <button class="btn-primary" onclick="login()"><i class="fa-solid fa-right-to-bracket"></i> دخول التطبيق</button>
+    </div>
+  </div>
+
+  <!-- Main App Frame -->
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="header-user">
+        <div class="header-avatar" id="currentAvatar">أ</div>
+        <div class="header-info">
+          <h2>مرحباً <span id="currentUserName">أحمد</span> <span class="status-dot"></span></h2>
+          <p id="partnerStatus">متصل مع أريام أونلاين</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="bellBtn" onclick="requestNotificationPermission()" title="تفعيل الإشعارات">
+          <i class="fa-regular fa-bell"></i>
+        </button>
+        <button class="icon-btn" onclick="switchUser()" title="تبديل المستخدم">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <div class="banner-wrapper">
+      <div class="hero-banner">
+        <h3>تنسيق البيت بكل سهولة 🛒</h3>
+        <p>كل الطلبات واقتراحات وجبات الطعام متزامنة أونلاين لحظة بلحظة!</p>
+      </div>
     </div>
 
-    <!-- Add/Edit Task Modal -->
-    <div class="modal" id="task-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modal-title">إضافة مهمة جديدة</h3>
-                <button class="modal-close" id="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="task-form">
-                    <input type="hidden" id="task-id">
-                    <div class="form-group">
-                        <label for="task-title" class="form-label">عنوان المهمة</label>
-                        <input type="text" id="task-title" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="task-category" class="form-label">التصنيف</label>
-                        <select id="task-category" class="form-control form-select" required>
-                            <option value="personal">شخصية</option>
-                            <option value="work">عمل</option>
-                            <option value="study">دراسة</option>
-                            <option value="other">أخرى</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="task-priority" class="form-label">الأولوية</label>
-                        <select id="task-priority" class="form-control form-select" required>
-                            <option value="low">منخفضة</option>
-                            <option value="medium" selected>متوسطة</option>
-                            <option value="high">عالية</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="task-due-date" class="form-label">تاريخ الانتهاء</label>
-                        <input type="date" id="task-due-date" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="task-notes" class="form-label">ملاحظات</label>
-                        <textarea id="task-notes" class="form-control" rows="3"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" id="modal-cancel">إلغاء</button>
-                <button class="btn btn-primary" id="modal-save">حفظ</button>
-            </div>
-        </div>
+    <!-- Category Tabs Navigation -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('groceries', this)">
+        <i class="fa-solid fa-basket-shopping"></i> طلبات البيت
+      </button>
+      <button class="tab-btn" onclick="switchTab('cooking', this)">
+        <i class="fa-solid fa-utensils"></i> هنطبخ إيه؟
+      </button>
+      <button class="tab-btn" onclick="switchTab('notes', this)">
+        <i class="fa-solid fa-note-sticky"></i> ملاحظات
+      </button>
     </div>
 
-    <!-- Dark Mode Toggle -->
-    <button class="dark-mode-toggle" id="dark-mode-toggle">
-        <i class="fas fa-moon"></i>
-    </button>
+    <!-- TAB 1: Groceries List -->
+    <div id="tab-groceries" class="section-content active">
+      
+      <!-- Input Bar -->
+      <div class="add-bar">
+        <input type="text" id="newItemTitle" placeholder="أضف أغراض جديدة للبيت...">
+        <select id="newItemCategory">
+          <option value="بقالة">بقالة</option>
+          <option value="خضار وفواكه">خضار</option>
+          <option value="لحوم ودواجن">لحوم</option>
+          <option value="مخبوزات">مخبوزات</option>
+          <option value="منظفات">منظفات</option>
+        </select>
+        <button class="add-btn" onclick="addGroceryItem()"><i class="fa-solid fa-plus"></i></button>
+      </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const addTaskBtn = document.getElementById('add-task-btn');
-            const emptyAddBtn = document.getElementById('empty-add-btn');
-            const clearAllBtn = document.getElementById('clear-all');
-            const modal = document.getElementById('task-modal');
-            const modalClose = document.getElementById('modal-close');
-            const modalCancel = document.getElementById('modal-cancel');
-            const modalSave = document.getElementById('modal-save');
-            const modalTitle = document.getElementById('modal-title');
-            const taskForm = document.getElementById('task-form');
-            const taskIdInput = document.getElementById('task-id');
-            const taskTitleInput = document.getElementById('task-title');
-            const taskCategoryInput = document.getElementById('task-category');
-            const taskPriorityInput = document.getElementById('task-priority');
-            const taskDueDateInput = document.getElementById('task-due-date');
-            const taskNotesInput = document.getElementById('task-notes');
-            const categoryBtns = document.querySelectorAll('.category-btn');
-            const darkModeToggle = document.getElementById('dark-mode-toggle');
-            const quickTaskInput = document.getElementById('quick-task-input');
-            const quickAddBtn = document.getElementById('quick-add-btn');
-            
-            // Task Lists
-            const todoTasks = document.getElementById('todo-tasks');
-            const inprogressTasks = document.getElementById('inprogress-tasks');
-            const doneTasks = document.getElementById('done-tasks');
-            const emptyState = document.getElementById('empty-state');
-            
-            // Variables
-            let tasks = JSON.parse(localStorage.getItem('smartTasks')) || [];
-            let currentFilter = 'all';
-            let isEditing = false;
-            let currentTaskId = null;
-            let draggedTask = null;
-            
-            // Initialize the app
-            init();
-            
-            // Event Listeners
-            addTaskBtn.addEventListener('click', () => openModal());
-            emptyAddBtn.addEventListener('click', () => openModal());
-            modalClose.addEventListener('click', () => closeModal());
-            modalCancel.addEventListener('click', () => closeModal());
-            modalSave.addEventListener('click', () => saveTask());
-            clearAllBtn.addEventListener('click', clearAllTasks);
-            darkModeToggle.addEventListener('click', toggleDarkMode);
-            quickAddBtn.addEventListener('click', addQuickTask);
-            quickTaskInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addQuickTask();
-                }
-            });
-            
-            categoryBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    categoryBtns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter = btn.dataset.category;
-                    filterTasks();
-                });
-            });
-            
-            // Drag and Drop Events
-            document.querySelectorAll('.task-list').forEach(list => {
-                list.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    list.classList.add('drop-over');
-                });
-                
-                list.addEventListener('dragleave', () => {
-                    list.classList.remove('drop-over');
-                });
-                
-                list.addEventListener('drop', e => {
-                    e.preventDefault();
-                    list.classList.remove('drop-over');
-                    
-                    if (draggedTask) {
-                        const newStatus = list.dataset.status;
-                        updateTaskStatus(draggedTask.dataset.id, newStatus);
-                        list.appendChild(draggedTask);
-                        draggedTask = null;
-                    }
-                });
-            });
-            
-            // Functions
-            function init() {
-                renderTasks();
-                updateTaskCounts();
-                checkEmptyState();
-                loadDarkMode();
-                
-                // Set today's date as default for due date
-                const today = new Date();
-                const formattedDate = today.toISOString().split('T')[0];
-                taskDueDateInput.value = formattedDate;
-            }
-            
-            function addQuickTask() {
-                const title = quickTaskInput.value.trim();
-                if (!title) return;
-                
-                const taskData = {
-                    id: Date.now().toString(),
-                    title: title,
-                    category: 'personal',
-                    priority: 'medium',
-                    dueDate: null,
-                    notes: null,
-                    status: 'todo',
-                    createdAt: new Date().toISOString()
-                };
-                
-                tasks.push(taskData);
-                saveToLocalStorage();
-                renderTasks();
-                quickTaskInput.value = '';
-                quickTaskInput.focus();
-            }
-            
-            function openModal(task = null) {
-                isEditing = task !== null;
-                
-                if (isEditing) {
-                    modalTitle.textContent = 'تعديل المهمة';
-                    currentTaskId = task.dataset.id;
-                    const taskData = tasks.find(t => t.id === currentTaskId);
-                    
-                    taskIdInput.value = taskData.id;
-                    taskTitleInput.value = taskData.title;
-                    taskCategoryInput.value = taskData.category;
-                    taskPriorityInput.value = taskData.priority;
-                    taskDueDateInput.value = taskData.dueDate || '';
-                    taskNotesInput.value = taskData.notes || '';
-                } else {
-                    modalTitle.textContent = 'إضافة مهمة جديدة';
-                    taskForm.reset();
-                    currentTaskId = null;
-                    
-                    // Set today's date as default for new tasks
-                    const today = new Date();
-                    const formattedDate = today.toISOString().split('T')[0];
-                    taskDueDateInput.value = formattedDate;
-                }
-                
-                modal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-                taskTitleInput.focus();
-            }
-            
-            function closeModal() {
-                modal.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-            
-            function saveTask() {
-                if (!taskTitleInput.value.trim()) {
-                    alert('الرجاء إدخال عنوان للمهمة');
-                    return;
-                }
-                
-                const taskData = {
-                    id: isEditing ? currentTaskId : Date.now().toString(),
-                    title: taskTitleInput.value.trim(),
-                    category: taskCategoryInput.value,
-                    priority: taskPriorityInput.value,
-                    dueDate: taskDueDateInput.value || null,
-                    notes: taskNotesInput.value.trim() || null,
-                    status: isEditing ? tasks.find(t => t.id === currentTaskId).status : 'todo',
-                    createdAt: isEditing ? tasks.find(t => t.id === currentTaskId).createdAt : new Date().toISOString()
-                };
-                
-                if (isEditing) {
-                    // Update existing task
-                    tasks = tasks.map(task => 
-                        task.id === currentTaskId ? taskData : task
-                    );
-                } else {
-                    // Add new task
-                    tasks.push(taskData);
-                }
-                
-                saveToLocalStorage();
-                renderTasks();
-                closeModal();
-            }
-            
-            function renderTasks() {
-                // Clear all task lists
-                todoTasks.innerHTML = '';
-                inprogressTasks.innerHTML = '';
-                doneTasks.innerHTML = '';
-                
-                // Filter tasks based on current category filter
-                const filteredTasks = currentFilter === 'all' 
-                    ? tasks 
-                    : tasks.filter(task => task.category === currentFilter);
-                
-                // Render each task
-                filteredTasks.forEach(task => {
-                    const taskElement = createTaskElement(task);
-                    
-                    switch (task.status) {
-                        case 'todo':
-                            todoTasks.appendChild(taskElement);
-                            break;
-                        case 'inprogress':
-                            inprogressTasks.appendChild(taskElement);
-                            break;
-                        case 'done':
-                            doneTasks.appendChild(taskElement);
-                            break;
-                    }
-                });
-                
-                updateTaskCounts();
-                checkEmptyState();
-            }
-            
-            function createTaskElement(task) {
-                const taskElement = document.createElement('div');
-                taskElement.className = `task-card ${task.category}`;
-                taskElement.dataset.id = task.id;
-                taskElement.draggable = true;
-                
-                // Priority class
-                const priorityClass = `priority-${task.priority}`;
-                const priorityText = {
-                    high: 'عالية',
-                    medium: 'متوسطة',
-                    low: 'منخفضة'
-                }[task.priority];
-                
-                // Format date
-                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-                const formattedDate = dueDate ? dueDate.toLocaleDateString('ar-EG') : 'لا يوجد';
-                
-                // Task icon based on category
-                const categoryIcons = {
-                    personal: 'user',
-                    work: 'briefcase',
-                    study: 'book',
-                    other: 'ellipsis-h'
-                };
-                
-                taskElement.innerHTML = `
-                    <div class="task-header">
-                        <h3 class="task-title">
-                            <i class="fas fa-${categoryIcons[task.category]}"></i> ${task.title}
-                        </h3>
-                        <div class="task-actions">
-                            <button class="task-btn edit" title="تعديل">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="task-btn delete" title="حذف">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="task-details">
-                        <span class="task-priority ${priorityClass}">
-                            ${priorityText}
-                        </span>
-                        <div class="task-date">
-                            <i class="far fa-calendar-alt"></i>
-                            ${formattedDate}
-                        </div>
-                        ${task.notes ? `<p>${task.notes}</p>` : ''}
-                    </div>
-                `;
-                
-                // Add drag events
-                taskElement.addEventListener('dragstart', () => {
-                    draggedTask = taskElement;
-                    taskElement.classList.add('dragging');
-                    setTimeout(() => {
-                        taskElement.style.display = 'none';
-                    }, 0);
-                });
-                
-                taskElement.addEventListener('dragend', () => {
-                    taskElement.classList.remove('dragging');
-                    taskElement.style.display = 'block';
-                });
-                
-                // Add edit and delete events
-                const editBtn = taskElement.querySelector('.edit');
-                const deleteBtn = taskElement.querySelector('.delete');
-                
-                editBtn.addEventListener('click', () => openModal(taskElement));
-                deleteBtn.addEventListener('click', () => deleteTask(task.id));
-                
-                return taskElement;
-            }
-            
-            function updateTaskStatus(taskId, newStatus) {
-                tasks = tasks.map(task => 
-                    task.id === taskId ? { ...task, status: newStatus } : task
-                );
-                saveToLocalStorage();
-                updateTaskCounts();
-            }
-            
-            function deleteTask(taskId) {
-                if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
-                    tasks = tasks.filter(task => task.id !== taskId);
-                    saveToLocalStorage();
-                    renderTasks();
-                }
-            }
-            
-            function clearAllTasks() {
-                if (tasks.length === 0) return;
-                
-                if (confirm('هل أنت متأكد من حذف جميع المهام؟ لا يمكن التراجع عن هذا الإجراء.')) {
-                    tasks = [];
-                    saveToLocalStorage();
-                    renderTasks();
-                }
-            }
-            
-            function filterTasks() {
-                renderTasks();
-            }
-            
-            function updateTaskCounts() {
-                document.getElementById('todo-count').textContent = 
-                    tasks.filter(t => t.status === 'todo').length;
-                document.getElementById('inprogress-count').textContent = 
-                    tasks.filter(t => t.status === 'inprogress').length;
-                document.getElementById('done-count').textContent = 
-                    tasks.filter(t => t.status === 'done').length;
-            }
-            
-            function checkEmptyState() {
-                const hasTasks = tasks.length > 0;
-                emptyState.style.display = hasTasks ? 'none' : 'block';
-                
-                if (hasTasks) {
-                    const hasFilteredTasks = currentFilter === 'all' 
-                        ? true 
-                        : tasks.some(task => task.category === currentFilter);
-                    
-                    document.querySelectorAll('.task-list').forEach(list => {
-                        list.style.display = hasFilteredTasks ? 'flex' : 'none';
-                    });
-                }
-            }
-            
-            function saveToLocalStorage() {
-                localStorage.setItem('smartTasks', JSON.stringify(tasks));
-            }
-            
-            function toggleDarkMode() {
-                document.body.classList.toggle('dark-mode');
-                const isDarkMode = document.body.classList.contains('dark-mode');
-                localStorage.setItem('darkMode', isDarkMode);
-                darkModeToggle.innerHTML = isDarkMode 
-                    ? '<i class="fas fa-sun"></i>' 
-                    : '<i class="fas fa-moon"></i>';
-            }
-            
-            function loadDarkMode() {
-                const darkMode = localStorage.getItem('darkMode') === 'true';
-                if (darkMode) {
-                    document.body.classList.add('dark-mode');
-                    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-                }
-            }
+      <!-- Categories Filter Chips -->
+      <div class="category-chips">
+        <div class="category-chip active" onclick="filterCategory('الكل', this)">الكل</div>
+        <div class="category-chip" onclick="filterCategory('بقالة', this)">🥬 بقالة</div>
+        <div class="category-chip" onclick="filterCategory('خضار وفواكه', this)">🍎 خضار وفواكه</div>
+        <div class="category-chip" onclick="filterCategory('لحوم ودواجن', this)">🍗 لحوم ودواجن</div>
+        <div class="category-chip" onclick="filterCategory('مخبوزات', this)">🥐 مخبوزات</div>
+        <div class="category-chip" onclick="filterCategory('منظفات', this)">🧼 منظفات</div>
+      </div>
+
+      <!-- Items List -->
+      <div class="items-list" id="groceryItemsList">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- TAB 2: Cooking Ideas -->
+    <div id="tab-cooking" class="section-content">
+      
+      <!-- Selector Wheel -->
+      <div class="wheel-card">
+        <h4>عجلة الحظ: هنطبخ إيه النهاردة؟ 🎲</h4>
+        <div class="spin-result" id="wheelResult">اضغط للتدوير واختيار وجبة عشوائية!</div>
+        <button class="spin-btn" onclick="spinWheel()"><i class="fa-solid fa-rotate"></i> اختيار وجبة اليوم</button>
+      </div>
+
+      <!-- Add New Recipe -->
+      <div class="add-bar">
+        <input type="text" id="newRecipeTitle" placeholder="اقترح وجبة جديدة...">
+        <input type="text" id="newRecipeIngredients" placeholder="المكونات (بينها فاصلة)" style="flex:1;">
+        <button class="add-btn" onclick="addRecipe()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+
+      <!-- Recipe List -->
+      <div class="recipes-grid" id="recipesList">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- TAB 3: Notes -->
+    <div id="tab-notes" class="section-content">
+      <div class="add-bar">
+        <input type="text" id="newNoteText" placeholder="اكتب ملاحظة سريعة لأريام/أحمد...">
+        <button class="add-btn" onclick="addNote()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+
+      <div class="notes-container" id="notesList">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('groceries', null, 0)">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>الطلبات</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('cooking', null, 1)">
+        <i class="fa-solid fa-kitchen-set"></i>
+        <span>طبخ اليوم</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('notes', null, 2)">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span>ملاحظات</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase v10 SDKs (Modular via CDN) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzRPZ5HFE95Gge_PPjglx9SJVMwBIYyKo",
+      authDomain: "design-control.firebaseapp.com",
+      projectId: "design-control",
+      storageBucket: "design-control.firebasestorage.app",
+      messagingSenderId: "924894268278",
+      appId: "1:924894268278:web:542d4933750845d45e0857",
+      measurementId: "G-W38F1MGP2J"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Global State
+    let currentUser = localStorage.getItem('house_app_user') || 'أحمد';
+    let selectedUserForAuth = 'أحمد';
+    let activeCategory = 'الكل';
+    let groceryItems = {};
+    let recipes = {};
+    let notes = {};
+
+    // Expose Functions to Window Global Scope
+    window.selectUser = function(name) {
+      selectedUserForAuth = name;
+      document.getElementById('btnAhmed').classList.toggle('active', name === 'أحمد');
+      document.getElementById('btnAriam').classList.toggle('active', name === 'أريام');
+      
+      document.getElementById('btnAhmed').querySelector('i').className = name === 'أحمد' ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle';
+      document.getElementById('btnAriam').querySelector('i').className = name === 'أريام' ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle';
+    };
+
+    window.login = function() {
+      currentUser = selectedUserForAuth;
+      localStorage.setItem('house_app_user', currentUser);
+      document.getElementById('authOverlay').style.display = 'none';
+      updateUserUI();
+      showToast(`مرحباً بك يا ${currentUser}!`);
+    };
+
+    window.switchUser = function() {
+      document.getElementById('authOverlay').style.display = 'flex';
+    };
+
+    function updateUserUI() {
+      document.getElementById('currentUserName').innerText = currentUser;
+      document.getElementById('currentAvatar').innerText = currentUser.charAt(0);
+      document.getElementById('currentAvatar').style.background = currentUser === 'أحمد' ? '#FF5A00' : '#E91E63';
+      const partner = currentUser === 'أحمد' ? 'أريام' : 'أحمد';
+      document.getElementById('partnerStatus').innerText = `متصل مع ${partner} أونلاين`;
+    }
+
+    // Tab Switching
+    window.switchTab = function(tabName, btnElement, navIndex) {
+      document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+
+      if(btnElement) {
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
+
+      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      navItems.forEach(el => el.classList.remove('active'));
+      if(navIndex !== undefined) {
+        navItems[navIndex].classList.add('active');
+      }
+    };
+
+    // Firebase Realtime Listeners
+    function initFirebaseSync() {
+      // Listen to Groceries
+      onValue(ref(db, 'groceries'), (snapshot) => {
+        groceryItems = snapshot.val() || {};
+        renderGroceries();
+      });
+
+      // Listen to Recipes
+      onValue(ref(db, 'recipes'), (snapshot) => {
+        recipes = snapshot.val() || {};
+        renderRecipes();
+      });
+
+      // Listen to Notes
+      onValue(ref(db, 'notes'), (snapshot) => {
+        notes = snapshot.val() || {};
+        renderNotes();
+      });
+    }
+
+    // --- Groceries Logic ---
+    window.addGroceryItem = function() {
+      const input = document.getElementById('newItemTitle');
+      const catSelect = document.getElementById('newItemCategory');
+      const title = input.value.trim();
+      if(!title) return;
+
+      const newItemRef = push(ref(db, 'groceries'));
+      set(newItemRef, {
+        title: title,
+        category: catSelect.value,
+        addedBy: currentUser,
+        completed: false,
+        timestamp: Date.now()
+      });
+
+      input.value = '';
+      sendNotification("طلب جديد", `قام ${currentUser} بإضافة: ${title}`);
+      showToast("تم إضافة الغرض بنجاح!");
+    };
+
+    window.toggleGroceryItem = function(id, currentStatus) {
+      update(ref(db, `groceries/${id}`), {
+        completed: !currentStatus
+      });
+    };
+
+    window.deleteGroceryItem = function(id) {
+      remove(ref(db, `groceries/${id}`));
+      showToast("تم حذف الغرض!");
+    };
+
+    window.filterCategory = function(cat, chip) {
+      activeCategory = cat;
+      document.querySelectorAll('.category-chip').forEach(el => el.classList.remove('active'));
+      chip.classList.add('active');
+      renderGroceries();
+    };
+
+    function renderGroceries() {
+      const container = document.getElementById('groceryItemsList');
+      container.innerHTML = '';
+
+      const keys = Object.keys(groceryItems);
+      if(keys.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 30px; color: #999; font-weight:700;">لا توجد طلبات حالياً! 🎉</div>`;
+        return;
+      }
+
+      keys.forEach(key => {
+        const item = groceryItems[key];
+        if(activeCategory !== 'الكل' && item.category !== activeCategory) return;
+
+        const card = document.createElement('div');
+        card.className = `item-card ${item.completed ? 'completed' : ''}`;
+        card.innerHTML = `
+          <div class="item-left">
+            <div class="custom-checkbox" onclick="toggleGroceryItem('${key}', ${item.completed})">
+              ${item.completed ? '<i class="fa-solid fa-check"></i>' : ''}
+            </div>
+            <div>
+              <div class="item-title">${item.title}</div>
+              <div class="item-meta">
+                <span><i class="fa-solid fa-tag"></i> ${item.category}</span>
+                <span class="badge-added-by">${item.addedBy}</span>
+              </div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <i class="fa-solid fa-trash-can action-icon" onclick="deleteGroceryItem('${key}')"></i>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // --- Cooking Logic ---
+    window.addRecipe = function() {
+      const titleInput = document.getElementById('newRecipeTitle');
+      const ingInput = document.getElementById('newRecipeIngredients');
+      const title = titleInput.value.trim();
+      const ingredients = ingInput.value.trim();
+
+      if(!title) return;
+
+      const newRecipeRef = push(ref(db, 'recipes'));
+      set(newRecipeRef, {
+        title: title,
+        ingredients: ingredients,
+        addedBy: currentUser,
+        votes: 0,
+        voters: {}
+      });
+
+      titleInput.value = '';
+      ingInput.value = '';
+      sendNotification("وجبة جديدة", `اقترح ${currentUser} وجبة: ${title}`);
+      showToast("تم إضافة الوجبة!");
+    };
+
+    window.voteRecipe = function(id) {
+      const recipe = recipes[id];
+      if(!recipe) return;
+
+      const voters = recipe.voters || {};
+      const hasVoted = voters[currentUser];
+
+      if(hasVoted) {
+        delete voters[currentUser];
+        recipe.votes = (recipe.votes || 1) - 1;
+      } else {
+        voters[currentUser] = true;
+        recipe.votes = (recipe.votes || 0) + 1;
+      }
+
+      update(ref(db, `recipes/${id}`), {
+        votes: recipe.votes,
+        voters: voters
+      });
+    };
+
+    window.addIngredientsToGroceries = function(ingredientsText) {
+      if(!ingredientsText) return;
+      const list = ingredientsText.split('،').join(',').split(',');
+      
+      list.forEach(ing => {
+        const item = ing.trim();
+        if(item) {
+          const newItemRef = push(ref(db, 'groceries'));
+          set(newItemRef, {
+            title: item,
+            category: 'بقالة',
+            addedBy: currentUser,
+            completed: false,
+            timestamp: Date.now()
+          });
+        }
+      });
+
+      showToast("تم تحويل المكونات لسلة الطلبات!");
+      switchTab('groceries', null, 0);
+    };
+
+    window.spinWheel = function() {
+      const keys = Object.keys(recipes);
+      if(keys.length === 0) {
+        document.getElementById('wheelResult').innerText = "قم بإضافة وجبات أولاً!";
+        return;
+      }
+
+      let count = 0;
+      const interval = setInterval(() => {
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        document.getElementById('wheelResult').innerText = recipes[randomKey].title;
+        count++;
+        if(count > 12) {
+          clearInterval(interval);
+          showToast(`تم اختيار: ${document.getElementById('wheelResult').innerText}`);
+        }
+      }, 100);
+    };
+
+    function renderRecipes() {
+      const container = document.getElementById('recipesList');
+      container.innerHTML = '';
+
+      const keys = Object.keys(recipes);
+      if(keys.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 20px; color: #999;">لا توجد اقتراحات وجبات، أضف أول وجبة!</div>`;
+        return;
+      }
+
+      keys.forEach(key => {
+        const recipe = recipes[key];
+        const voters = recipe.voters || {};
+        const isVoted = voters[currentUser];
+
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        card.innerHTML = `
+          <div class="recipe-body">
+            <div class="recipe-header">
+              <div class="recipe-title">${recipe.title}</div>
+              <div class="recipe-votes">
+                <button class="vote-btn ${isVoted ? 'voted' : ''}" onclick="voteRecipe('${key}')">
+                  <i class="fa-solid fa-heart"></i> ${recipe.votes || 0}
+                </button>
+              </div>
+            </div>
+            ${recipe.ingredients ? `<div class="recipe-ingredients"><i class="fa-solid fa-list-check"></i> المكونات: ${recipe.ingredients}</div>` : ''}
+            <div class="recipe-footer">
+              <span style="font-size:11px; color:#999;">بواسطة: ${recipe.addedBy}</span>
+              ${recipe.ingredients ? `<button class="add-ingredients-btn" onclick="addIngredientsToGroceries('${recipe.ingredients}')">+ أضف المكونات للطلبات</button>` : ''}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // --- Notes Logic ---
+    window.addNote = function() {
+      const input = document.getElementById('newNoteText');
+      const text = input.value.trim();
+      if(!text) return;
+
+      const newNoteRef = push(ref(db, 'notes'));
+      set(newNoteRef, {
+        text: text,
+        sender: currentUser,
+        time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+      });
+
+      input.value = '';
+      sendNotification("ملاحظة جديدة", `${currentUser}: ${text}`);
+    };
+
+    function renderNotes() {
+      const container = document.getElementById('notesList');
+      container.innerHTML = '';
+
+      const keys = Object.keys(notes);
+      if(keys.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 20px; color: #999;">لا توجد ملاحظات، أرسل كلمة حلوة ❤️</div>`;
+        return;
+      }
+
+      keys.forEach(key => {
+        const note = notes[key];
+        const card = document.createElement('div');
+        card.className = `note-bubble ${note.sender === currentUser ? 'mine' : ''}`;
+        card.innerHTML = `
+          <div class="note-header">
+            <span>${note.sender}</span>
+            <span>${note.time}</span>
+          </div>
+          <div class="note-text">${note.text}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // --- Notifications & Toasts ---
+    window.requestNotificationPermission = function() {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            document.getElementById('bellBtn').classList.add('active-bell');
+            showToast("تم تفعيل الإشعارات بنجاح!");
+          }
         });
-    </script>
+      }
+    };
+
+    function sendNotification(title, body) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+          body: body,
+          icon: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png'
+        });
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // App Initialization
+    window.onload = function() {
+      if(currentUser) {
+        document.getElementById('authOverlay').style.display = 'none';
+        updateUserUI();
+      }
+      initFirebaseSync();
+    };
+  </script>
 </body>
 </html>
