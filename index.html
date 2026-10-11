@@ -531,7 +531,6 @@
 
             const itemTitle = nameInput.value.trim();
             
-            // Save item name to local saved items list catalog for autocompletion
             addSavedItemToCatalog(itemTitle);
 
             const newItemRef = push(ref(db, 'grocery'));
@@ -578,7 +577,6 @@
             displayBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl text-white"></i>';
             
             setTimeout(() => {
-                // Combine preset random meals and currently added meals from the voting table
                 let allPossibleMeals = [...presetRandomMeals];
                 mealsList.forEach(m => {
                     if (m.title && !allPossibleMeals.includes(m.title)) {
@@ -652,7 +650,6 @@
 
             let addedCount = 0;
             meal.ingredients.forEach(ing => {
-                // Also add to saved catalog memory
                 addSavedItemToCatalog(ing);
 
                 const newItemRef = push(ref(db, 'grocery'));
@@ -701,21 +698,42 @@
             showToast('تم حذف الملاحظة');
         };
 
-        window.requestNotificationPermission = function() {
+        // --- FIXED ANDROID / iOS NOTIFICATION FUNCTION ---
+        window.requestNotificationPermission = async function() {
             if (!("Notification" in window)) {
                 showToast("متصفحك لا يدعم إشعارات النظام ⚠️");
                 return;
             }
 
-            Notification.requestPermission().then(permission => {
+            try {
+                const permission = await Notification.requestPermission();
                 checkNotificationPermissionStatus();
+                
                 if (permission === "granted") {
                     showToast("تم تفعيل إشعارات المتصفح بنجاح! 🔔");
-                    sendNativeNotification("بيت العز ❤️", "أهلاً بك! ستصلك إشعارات وتحديثات طلبات المنزل فوراً.");
+                    
+                    // محاولة استخدام Service Worker للـ Notifications في أندرويد لضمان ظهورها بشكل موثوق
+                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                        const reg = await navigator.serviceWorker.ready;
+                        reg.showNotification("بيت العز ❤️", {
+                            body: "أهلاً بك! ستصلك إشعارات وتحديثات طلبات المنزل فوراً.",
+                            icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
+                            dir: 'rtl'
+                        });
+                    } else {
+                        new Notification("بيت العز ❤️", {
+                            body: "أهلاً بك! ستصلك إشعارات وتحديثات طلبات المنزل فوراً.",
+                            icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
+                            dir: 'rtl'
+                        });
+                    }
                 } else {
                     showToast("لم يتم إعطاء صلاحية الإشعارات");
                 }
-            });
+            } catch (err) {
+                console.error("Notification permission error:", err);
+                showToast("حدث خطأ أثناء طلب تفعيل الإشعارات");
+            }
         };
 
         // --- HELPER FUNCTIONS ---
@@ -751,9 +769,22 @@
             }
         }
 
-        function sendNativeNotification(title, body) {
+        async function sendNativeNotification(title, body) {
             if ("Notification" in window && Notification.permission === "granted") {
                 try {
+                    // دعم أندرويد الحديث عبر ServiceWorker Registration إن وجد لتجاوز قيود المتصفح المحمول
+                    if ('serviceWorker' in navigator) {
+                        const registration = await navigator.serviceWorker.getRegistration();
+                        if (registration) {
+                            registration.showNotification(title, {
+                                body: body,
+                                icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
+                                dir: 'rtl'
+                            });
+                            return;
+                        }
+                    }
+                    // الطريقة التقليدية (تعمل على الآيفون وبعض متصفحات سطح المكتب)
                     new Notification(title, {
                         body: body,
                         icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
@@ -788,12 +819,11 @@
                 filtered = filtered.filter(i => i.category === currentCategoryFilter);
             }
 
-            // SORTING RULE: Uncompleted (checked == false) items are shown at the TOP
             filtered.sort((a, b) => {
                 if (a.checked === b.checked) {
-                    return (b.createdAt || 0) - (a.createdAt || 0); // Newest first for same status
+                    return (b.createdAt || 0) - (a.createdAt || 0);
                 }
-                return a.checked ? 1 : -1; // If a is checked, push it down; if false (not finished), push to top
+                return a.checked ? 1 : -1;
             });
 
             const total = groceryList.length;
