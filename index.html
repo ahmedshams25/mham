@@ -531,6 +531,7 @@
 
             const itemTitle = nameInput.value.trim();
             
+            // Save item name to local saved items list catalog for autocompletion
             addSavedItemToCatalog(itemTitle);
 
             const newItemRef = push(ref(db, 'grocery'));
@@ -577,6 +578,7 @@
             displayBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl text-white"></i>';
             
             setTimeout(() => {
+                // Combine preset random meals and currently added meals from the voting table
                 let allPossibleMeals = [...presetRandomMeals];
                 mealsList.forEach(m => {
                     if (m.title && !allPossibleMeals.includes(m.title)) {
@@ -650,6 +652,7 @@
 
             let addedCount = 0;
             meal.ingredients.forEach(ing => {
+                // Also add to saved catalog memory
                 addSavedItemToCatalog(ing);
 
                 const newItemRef = push(ref(db, 'grocery'));
@@ -698,7 +701,6 @@
             showToast('تم حذف الملاحظة');
         };
 
-        // --- FIXED ANDROID / iOS NOTIFICATION FUNCTION ---
         window.requestNotificationPermission = async function() {
             if (!("Notification" in window)) {
                 showToast("متصفحك لا يدعم إشعارات النظام ⚠️");
@@ -706,33 +708,29 @@
             }
 
             try {
-                const permission = await Notification.requestPermission();
+                // تأكد إن الـ Service Worker جاهز (ضروري لأندرويد)
+                await registerServiceWorker();
+
+                // دعم الصيغتين: Promise (الحديثة) و Callback (القديمة)
+                const permission = await new Promise((resolve) => {
+                    const result = Notification.requestPermission(resolve);
+                    if (result && typeof result.then === 'function') {
+                        result.then(resolve);
+                    }
+                });
+
                 checkNotificationPermissionStatus();
-                
                 if (permission === "granted") {
                     showToast("تم تفعيل إشعارات المتصفح بنجاح! 🔔");
-                    
-                    // محاولة استخدام Service Worker للـ Notifications في أندرويد لضمان ظهورها بشكل موثوق
-                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                        const reg = await navigator.serviceWorker.ready;
-                        reg.showNotification("بيت العز ❤️", {
-                            body: "أهلاً بك! ستصلك إشعارات وتحديثات طلبات المنزل فوراً.",
-                            icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
-                            dir: 'rtl'
-                        });
-                    } else {
-                        new Notification("بيت العز ❤️", {
-                            body: "أهلاً بك! ستصلك إشعارات وتحديثات طلبات المنزل فوراً.",
-                            icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
-                            dir: 'rtl'
-                        });
-                    }
+                    sendNativeNotification("بيت العز ❤️", "أهلاً بك! ستصلك إشعارات وتحديثات طلبات المنزل فوراً.");
+                } else if (permission === "denied") {
+                    showToast("الإشعارات محظورة، فعّلها من إعدادات الموقع في المتصفح");
                 } else {
                     showToast("لم يتم إعطاء صلاحية الإشعارات");
                 }
-            } catch (err) {
-                console.error("Notification permission error:", err);
-                showToast("حدث خطأ أثناء طلب تفعيل الإشعارات");
+            } catch (e) {
+                console.log("Permission error:", e);
+                showToast("حدث خطأ أثناء تفعيل الإشعارات");
             }
         };
 
@@ -769,30 +767,51 @@
             }
         }
 
+        // --- SERVICE WORKER (مطلوب لإشعارات أندرويد) ---
+        let swRegistration = null;
+
+        async function registerServiceWorker() {
+            if (swRegistration) return swRegistration;
+            if (!("serviceWorker" in navigator)) return null;
+            try {
+                swRegistration = await navigator.serviceWorker.register('./sw.js');
+                await navigator.serviceWorker.ready;
+                return swRegistration;
+            } catch (e) {
+                console.log("SW registration failed:", e);
+                return null;
+            }
+        }
+
         async function sendNativeNotification(title, body) {
-            if ("Notification" in window && Notification.permission === "granted") {
-                try {
-                    // دعم أندرويد الحديث عبر ServiceWorker Registration إن وجد لتجاوز قيود المتصفح المحمول
-                    if ('serviceWorker' in navigator) {
-                        const registration = await navigator.serviceWorker.getRegistration();
-                        if (registration) {
-                            registration.showNotification(title, {
-                                body: body,
-                                icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
-                                dir: 'rtl'
-                            });
-                            return;
-                        }
-                    }
-                    // الطريقة التقليدية (تعمل على الآيفون وبعض متصفحات سطح المكتب)
-                    new Notification(title, {
-                        body: body,
-                        icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
-                        dir: 'rtl'
-                    });
-                } catch(e) {
-                    console.log("Notification error:", e);
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+            const options = {
+                body: body,
+                icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
+                badge: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
+                dir: 'rtl',
+                lang: 'ar',
+                tag: 'beit-alez-' + Date.now(),
+                vibrate: [200, 100, 200]
+            };
+
+            // الطريقة الأساسية: عن طريق الـ Service Worker (تشتغل على أندرويد وآيفون)
+            try {
+                const reg = swRegistration || await registerServiceWorker();
+                if (reg && reg.showNotification) {
+                    await reg.showNotification(title, options);
+                    return;
                 }
+            } catch (e) {
+                console.log("SW notification error:", e);
+            }
+
+            // خطة بديلة: الطريقة القديمة (سطح المكتب)
+            try {
+                new Notification(title, options);
+            } catch (e) {
+                console.log("Notification error:", e);
             }
         }
 
@@ -819,11 +838,12 @@
                 filtered = filtered.filter(i => i.category === currentCategoryFilter);
             }
 
+            // SORTING RULE: Uncompleted (checked == false) items are shown at the TOP
             filtered.sort((a, b) => {
                 if (a.checked === b.checked) {
-                    return (b.createdAt || 0) - (a.createdAt || 0);
+                    return (b.createdAt || 0) - (a.createdAt || 0); // Newest first for same status
                 }
-                return a.checked ? 1 : -1;
+                return a.checked ? 1 : -1; // If a is checked, push it down; if false (not finished), push to top
             });
 
             const total = groceryList.length;
@@ -996,6 +1016,7 @@
         updateUserUI();
         updateSavedItemsDatalist();
         checkNotificationPermissionStatus();
+        registerServiceWorker();
     </script>
 </body>
 </html>
