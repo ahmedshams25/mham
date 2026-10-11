@@ -136,8 +136,11 @@
                     </h3>
                     <form id="addGroceryForm" onsubmit="handleAddGrocery(event)" class="space-y-2.5">
                         <div class="flex gap-2">
-                            <input type="text" id="groceryName" placeholder="مثال: طماطم، حليب، منظف..." required
+                            <input type="text" id="groceryName" list="savedItemsList" placeholder="مثال: طماطم، حليب، منظف..." required
                                 class="w-full px-3.5 py-2.5 text-sm rounded-xl text-gray-800 bg-white/95 focus:bg-white border-0 outline-none placeholder-gray-400 shadow-inner">
+                            <datalist id="savedItemsList">
+                                <!-- Populated dynamically from saved items memory -->
+                            </datalist>
                             <select id="groceryCategory" class="bg-white/95 text-gray-800 text-xs rounded-xl px-2.5 font-bold outline-none border-0">
                                 <option value="veggies">خضار/فاكهة</option>
                                 <option value="dairy">بقالة/ألبان</option>
@@ -198,7 +201,7 @@
                     <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
                     <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2 backdrop-blur-sm">محتارين ناكل إيه؟</span>
                     <h2 class="text-xl font-black mb-1">عجلة اقتراح الوجبات 🎲</h2>
-                    <p class="text-xs text-orange-100 mb-4">خلي التطبيق يختار لكم وجبة غداء اليوم بشكل عشوائي!</p>
+                    <p class="text-xs text-orange-100 mb-4">خلي التطبيق يختار لكم وجبة غداء اليوم بشكل عشوائي من الجدول والتصويت!</p>
                     
                     <div id="selectedMealDisplay" class="bg-white/15 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl mb-4 min-h-[60px] flex items-center justify-center">
                         <span class="text-sm font-bold text-white">اضغط على الزر للاقتراح 👇</span>
@@ -357,6 +360,41 @@
             'شاورما دجاج وثومية وخبز صاج'
         ];
 
+        // --- SAVED ITEMS LIST MEMORY (LOCALSTORAGE) ---
+        function getSavedItemsCatalog() {
+            try {
+                let saved = JSON.parse(localStorage.getItem('app_saved_items_catalog')) || [
+                    'طماطم', 'حليب', 'بصل', 'بطاطس', 'أرز', 'مكرونة', 'فراخ', 'لحمة', 'بيض', 'جبنة', 'زيت', 'سكر'
+                ];
+                return saved;
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function addSavedItemToCatalog(itemName) {
+            let cleanName = itemName.trim();
+            if (!cleanName) return;
+            let catalog = getSavedItemsCatalog();
+            if (!catalog.includes(cleanName)) {
+                catalog.push(cleanName);
+                localStorage.setItem('app_saved_items_catalog', JSON.stringify(catalog));
+                updateSavedItemsDatalist();
+            }
+        }
+
+        function updateSavedItemsDatalist() {
+            const datalist = document.getElementById('savedItemsList');
+            if (!datalist) return;
+            datalist.innerHTML = '';
+            let catalog = getSavedItemsCatalog();
+            catalog.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item;
+                datalist.appendChild(opt);
+            });
+        }
+
         // --- REALTIME DATABASE LISTENERS ---
         const groceryRef = ref(db, 'grocery');
         const mealsRef = ref(db, 'meals');
@@ -378,7 +416,7 @@
                 });
             }
 
-            groceryList = loaded.reverse();
+            groceryList = loaded;
             renderGrocery();
 
             if (!isInitialGroceryLoad && latestItem) {
@@ -492,6 +530,10 @@
             const urgentInput = document.getElementById('groceryUrgent');
 
             const itemTitle = nameInput.value.trim();
+            
+            // Save item name to local saved items list catalog for autocompletion
+            addSavedItemToCatalog(itemTitle);
+
             const newItemRef = push(ref(db, 'grocery'));
 
             set(newItemRef, {
@@ -536,7 +578,15 @@
             displayBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl text-white"></i>';
             
             setTimeout(() => {
-                const randomChoice = presetRandomMeals[Math.floor(Math.random() * presetRandomMeals.length)];
+                // Combine preset random meals and currently added meals from the voting table
+                let allPossibleMeals = [...presetRandomMeals];
+                mealsList.forEach(m => {
+                    if (m.title && !allPossibleMeals.includes(m.title)) {
+                        allPossibleMeals.push(m.title);
+                    }
+                });
+
+                const randomChoice = allPossibleMeals[Math.floor(Math.random() * allPossibleMeals.length)];
                 displayBox.innerHTML = `
                     <div class="text-center animate-bounce">
                         <span class="text-xs text-amber-200 block">الاقتراح المميز لليوم:</span>
@@ -602,6 +652,9 @@
 
             let addedCount = 0;
             meal.ingredients.forEach(ing => {
+                // Also add to saved catalog memory
+                addSavedItemToCatalog(ing);
+
                 const newItemRef = push(ref(db, 'grocery'));
                 set(newItemRef, {
                     name: ing,
@@ -730,10 +783,18 @@
             const container = document.getElementById('groceryListContainer');
             container.innerHTML = '';
 
-            let filtered = groceryList;
+            let filtered = [...groceryList];
             if (currentCategoryFilter !== 'all') {
-                filtered = groceryList.filter(i => i.category === currentCategoryFilter);
+                filtered = filtered.filter(i => i.category === currentCategoryFilter);
             }
+
+            // SORTING RULE: Uncompleted (checked == false) items are shown at the TOP
+            filtered.sort((a, b) => {
+                if (a.checked === b.checked) {
+                    return (b.createdAt || 0) - (a.createdAt || 0); // Newest first for same status
+                }
+                return a.checked ? 1 : -1; // If a is checked, push it down; if false (not finished), push to top
+            });
 
             const total = groceryList.length;
             const completed = groceryList.filter(i => i.checked).length;
@@ -903,6 +964,7 @@
 
         // Initialize UI State
         updateUserUI();
+        updateSavedItemsDatalist();
         checkNotificationPermissionStatus();
     </script>
 </body>
