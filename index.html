@@ -701,37 +701,21 @@
             showToast('تم حذف الملاحظة');
         };
 
-        window.requestNotificationPermission = async function() {
+        window.requestNotificationPermission = function() {
             if (!("Notification" in window)) {
                 showToast("متصفحك لا يدعم إشعارات النظام ⚠️");
                 return;
             }
 
-            try {
-                // تأكد إن الـ Service Worker جاهز (ضروري لأندرويد)
-                await registerServiceWorker();
-
-                // دعم الصيغتين: Promise (الحديثة) و Callback (القديمة)
-                const permission = await new Promise((resolve) => {
-                    const result = Notification.requestPermission(resolve);
-                    if (result && typeof result.then === 'function') {
-                        result.then(resolve);
-                    }
-                });
-
+            Notification.requestPermission().then(permission => {
                 checkNotificationPermissionStatus();
                 if (permission === "granted") {
                     showToast("تم تفعيل إشعارات المتصفح بنجاح! 🔔");
                     sendNativeNotification("بيت العز ❤️", "أهلاً بك! ستصلك إشعارات وتحديثات طلبات المنزل فوراً.");
-                } else if (permission === "denied") {
-                    showToast("الإشعارات محظورة، فعّلها من إعدادات الموقع في المتصفح");
                 } else {
                     showToast("لم يتم إعطاء صلاحية الإشعارات");
                 }
-            } catch (e) {
-                console.log("Permission error:", e);
-                showToast("حدث خطأ أثناء تفعيل الإشعارات");
-            }
+            });
         };
 
         // --- HELPER FUNCTIONS ---
@@ -767,51 +751,17 @@
             }
         }
 
-        // --- SERVICE WORKER (مطلوب لإشعارات أندرويد) ---
-        let swRegistration = null;
-
-        async function registerServiceWorker() {
-            if (swRegistration) return swRegistration;
-            if (!("serviceWorker" in navigator)) return null;
-            try {
-                swRegistration = await navigator.serviceWorker.register('./sw.js');
-                await navigator.serviceWorker.ready;
-                return swRegistration;
-            } catch (e) {
-                console.log("SW registration failed:", e);
-                return null;
-            }
-        }
-
-        async function sendNativeNotification(title, body) {
-            if (!("Notification" in window) || Notification.permission !== "granted") return;
-
-            const options = {
-                body: body,
-                icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
-                badge: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
-                dir: 'rtl',
-                lang: 'ar',
-                tag: 'beit-alez-' + Date.now(),
-                vibrate: [200, 100, 200]
-            };
-
-            // الطريقة الأساسية: عن طريق الـ Service Worker (تشتغل على أندرويد وآيفون)
-            try {
-                const reg = swRegistration || await registerServiceWorker();
-                if (reg && reg.showNotification) {
-                    await reg.showNotification(title, options);
-                    return;
+        function sendNativeNotification(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed&backgroundColor=ff5e00',
+                        dir: 'rtl'
+                    });
+                } catch(e) {
+                    console.log("Notification error:", e);
                 }
-            } catch (e) {
-                console.log("SW notification error:", e);
-            }
-
-            // خطة بديلة: الطريقة القديمة (سطح المكتب)
-            try {
-                new Notification(title, options);
-            } catch (e) {
-                console.log("Notification error:", e);
             }
         }
 
@@ -1016,7 +966,6 @@
         updateUserUI();
         updateSavedItemsDatalist();
         checkNotificationPermissionStatus();
-        registerServiceWorker();
     </script>
 </body>
 </html>
