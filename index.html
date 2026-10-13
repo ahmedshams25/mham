@@ -421,7 +421,11 @@
 
         // --- PUSH NOTIFICATIONS CONFIG ---
         // الصق هنا مفتاح VAPID: Firebase Console > Project settings > Cloud Messaging > Web Push certificates > Generate key pair
-        const VAPID_KEY = "BJ2UqV0fNe3IY9LX0cHP-96SjFB9wPHnzyIjOtfPc91XUMCbwClj0_BeSeOsz8xEqFg-4XYY5d-fCq7qFPnFnJ8";
+        // سيرفر الإشعارات (Cloudflare Worker) وكلمة السر بتاعته
+        const PUSH_WORKER_URL = "https://bait-alez-push.ahmed20400.workers.dev/";
+        const PUSH_SECRET = "DScc22350@";
+
+        const VAPID_KEY = "BDvkTFR1VEuvdkP0AUbc6DUF7B8aLLoLUc2i0CeaRZtrX7KwVbC1Jfm9S6WN_kz5WK7qzZRWLkvN-6SNixLHZSE";
 
         const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
         const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
@@ -644,6 +648,7 @@
             nameInput.value = '';
             urgentInput.checked = false;
             showToast('تمت إضافة الغرض للقائمة!');
+            notifyOthers('بيت العز - طلبات جديدة 🛒', `أضاف(ت) ${currentUser} غرضاً جديداً: (${itemTitle})`, 'grocery');
         };
 
         window.toggleGroceryItem = function(id) {
@@ -717,6 +722,7 @@
             titleInput.value = '';
             ingredientsInput.value = '';
             showToast('تمت إضافة الوجبة لجدول التصويت!');
+            notifyOthers('بيت العز - جدول الوجبات 🍽️', `اقترح(ت) ${currentUser} وجبة جديدة: (${mealTitle})`, 'meals');
         };
 
         window.voteMeal = function(mealId, type) {
@@ -764,6 +770,7 @@
             });
 
             showToast(`تمت إضافة ${addedCount} مكونات لسلة الطلبات 🛒`);
+            notifyOthers('بيت العز - طلبات جديدة 🛒', `أضاف(ت) ${currentUser} ${addedCount} مكونات لوجبة (${meal.title})`, 'grocery');
         };
 
         window.deleteMeal = function(id) {
@@ -789,6 +796,7 @@
 
             input.value = '';
             showToast('تمت إضافة الملاحظة!');
+            notifyOthers('بيت العز - ملاحظة جديدة 💌', `أرسل(ت) ${currentUser} ملاحظة: (${text})`, 'notes');
         };
 
         window.deleteNote = function(id) {
@@ -836,6 +844,18 @@
             localStorage.setItem('ios_banner_dismissed', '1');
             document.getElementById('iosInstallBanner').classList.add('hidden');
         };
+
+        // --- طلب إرسال إشعار للأجهزة التانية (عن طريق الـ Worker) ---
+        function notifyOthers(title, body, tag) {
+            if (PUSH_WORKER_URL.startsWith('PASTE')) return;
+            try {
+                fetch(PUSH_WORKER_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ secret: PUSH_SECRET, title, body, tag, senderDeviceId: deviceId }),
+                    keepalive: true
+                }).catch(() => {});
+            } catch (e) {}
+        }
 
         // --- HELPER FUNCTIONS ---
         function updateUserUI() {
@@ -1316,6 +1336,7 @@
             btn.disabled = false;
             btn.textContent = oldLabel;
             showToast('تم حفظ الوصفة 📖');
+            notifyOthers('بيت العز - وصفة جديدة 📖', `حفظ(ت) ${currentUser} وصفة جديدة: (${name})`, 'recipes');
         };
 
         window.deleteRecipe = function(id) {
@@ -1366,6 +1387,7 @@
                 createdAt: Date.now()
             });
             showToast('تم اقتراح الوصفة كوجبة 🍽️');
+            notifyOthers('بيت العز - جدول الوجبات 🍽️', `اقترح(ت) ${currentUser} وجبة جديدة: (${r.title})`, 'meals');
             switchTab('meals');
         };
 
