@@ -427,6 +427,7 @@
         const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
         let swRegistration = null;
         let pushEnabled = false;
+        let lastPushError = '';
 
         // --- APP STATE & INITIAL DATA ---
         let currentUser = localStorage.getItem('app_user') || 'أحمد (الزوج)';
@@ -826,7 +827,8 @@
             } else if (VAPID_KEY.startsWith('PASTE')) {
                 showToast("ناقص مفتاح VAPID في الكود ⚠️");
             } else {
-                showToast("تعذر تفعيل الإشعارات، جرّب مرة تانية");
+                showToast("تعذر تفعيل الإشعارات ⚠️");
+                alert("سبب الخطأ:\n" + lastPushError);
             }
         };
 
@@ -904,16 +906,31 @@
         }
 
         async function setupPush() {
-            if (VAPID_KEY.startsWith('PASTE')) return false;
+            if (VAPID_KEY.startsWith('PASTE')) { lastPushError = 'مفتاح VAPID ناقص'; return false; }
+            let stage = 'بداية';
             try {
-                if (!(await isSupported())) return false;
-                if (!swRegistration) await registerServiceWorker();
-                if (!swRegistration) return false;
+                stage = 'فحص دعم المتصفح';
+                if (!(await isSupported())) {
+                    lastPushError = 'المتصفح/الجهاز لا يدعم Push (isSupported = false). تأكد إنك فاتح التطبيق من أيقونة الشاشة الرئيسية.';
+                    return false;
+                }
 
+                stage = 'تسجيل الـ Service Worker';
+                if (!swRegistration) await registerServiceWorker();
+                if (!swRegistration) {
+                    lastPushError = 'فشل تسجيل الـ Service Worker. تأكد إن ملف firebase-messaging-sw.js مرفوع بجانب index.html.';
+                    return false;
+                }
+
+                stage = 'جلب التوكن (getToken)';
                 const messaging = getMessaging(app);
                 const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swRegistration });
-                if (!token) return false;
+                if (!token) {
+                    lastPushError = 'getToken رجّع فاضي';
+                    return false;
+                }
 
+                stage = 'حفظ التوكن في الداتابيز (قواعد Rules)';
                 await set(ref(db, `fcmTokens/${deviceId}`), {
                     token,
                     user: currentUser,
@@ -921,8 +938,10 @@
                     updatedAt: Date.now()
                 });
                 pushEnabled = true;
+                lastPushError = '';
                 return true;
             } catch (e) {
+                lastPushError = `[${stage}] ${e.code || ''} ${e.message || e}`;
                 console.log('Push setup failed', e);
                 return false;
             }
