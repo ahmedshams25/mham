@@ -356,14 +356,89 @@
                 </div>
             </section>
 
+            <!-- PAGE 5: MONTHLY ORDERS (4 WEEKS) -->
+            <section id="tab-monthly" class="space-y-4 hidden">
+
+                <!-- Month header + switcher -->
+                <div class="bg-gradient-to-br from-brand-orange to-orange-600 rounded-3xl p-4 text-white shadow-lg shadow-orange-500/20">
+                    <div class="flex items-center justify-between">
+                        <button onclick="changeMonthlyMonth(-1)" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center active:scale-90 transition-all">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                        <div class="text-center">
+                            <span class="text-[10px] font-bold opacity-80 block">طلبات الشهر</span>
+                            <h2 id="monthlyTitle" class="text-lg font-black leading-tight"></h2>
+                        </div>
+                        <button onclick="changeMonthlyMonth(1)" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center active:scale-90 transition-all">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                    </div>
+                    <div class="mt-3 flex items-center justify-between text-[11px] font-bold">
+                        <span id="monthlyTotalText" class="opacity-90">0 طلب في الشهر</span>
+                        <span id="monthlyDoneText" class="bg-white/20 px-2.5 py-0.5 rounded-full">تم 0</span>
+                    </div>
+                </div>
+
+                <!-- Week tabs -->
+                <div id="monthlyWeekTabs" class="grid grid-cols-4 gap-2">
+                    <!-- Rendered via JS -->
+                </div>
+
+                <!-- Add item to the selected week -->
+                <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-2.5">
+                    <h3 id="monthlyAddTitle" class="text-xs font-extrabold text-gray-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus-circle text-brand-orange"></i>
+                        <span>إضافة طلب للأسبوع 1</span>
+                    </h3>
+                    <form onsubmit="handleAddMonthly(event)" class="space-y-2">
+                        <input type="text" id="monthlyName" list="savedItemsList" placeholder="اسم الطلب (مثال: أرز، زيت، منظفات...)" required
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:border-brand-orange bg-gray-50">
+                        <div class="flex gap-2">
+                            <input type="text" id="monthlyQty" placeholder="الكمية (اختياري) مثال: 2 كيلو"
+                                class="flex-1 px-3.5 py-2.5 text-xs rounded-xl border border-gray-200 outline-none focus:border-brand-orange bg-gray-50">
+                            <button type="submit" class="bg-brand-orange hover:bg-orange-600 text-white font-extrabold text-xs px-5 rounded-xl transition-all active:scale-95 shadow-md shadow-orange-500/30">
+                                إضافة
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Selected week list -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <h3 id="monthlyWeekHeading" class="text-xs font-extrabold text-gray-500 uppercase tracking-wider">طلبات الأسبوع 1</h3>
+                        <button onclick="clearCompletedMonthly()" class="text-[11px] text-gray-400 hover:text-red-500 font-medium transition-colors">
+                            مسح المكتمل <i class="fa-solid fa-trash-can text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm space-y-1.5">
+                        <div class="flex justify-between items-center text-[11px]">
+                            <span class="font-bold text-gray-600">إنجاز الأسبوع</span>
+                            <span id="monthlyProgressText" class="font-extrabold text-brand-orange">0/0 (0%)</span>
+                        </div>
+                        <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                            <div id="monthlyProgressBar" class="bg-gradient-to-r from-brand-yellow to-brand-orange h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div id="monthlyListContainer" class="space-y-2">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </section>
+
         </main>
 
         <!-- Fixed Bottom Navigation Bar -->
         <nav class="bottom-nav fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white border-t border-gray-100 shadow-lg px-3 pt-2 z-50 rounded-t-3xl">
-            <div class="grid grid-cols-4 gap-1">
+            <div class="grid grid-cols-5 gap-1">
                 <button onclick="switchTab('grocery')" id="nav-grocery" class="nav-tab flex flex-col items-center py-1.5 px-2 rounded-2xl transition-all text-brand-orange font-bold">
                     <i class="fa-solid fa-basket-shopping text-lg mb-0.5"></i>
                     <span class="text-[11px]">طلبات البيت</span>
+                </button>
+
+                <button onclick="switchTab('monthly')" id="nav-monthly" class="nav-tab flex flex-col items-center py-1.5 px-1 rounded-2xl transition-all text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-calendar-days text-lg mb-0.5"></i>
+                    <span class="text-[11px]">طلبات الشهر</span>
                 </button>
 
                 <button onclick="switchTab('meals')" id="nav-meals" class="nav-tab flex flex-col items-center py-1.5 px-2 rounded-2xl transition-all text-gray-400 hover:text-gray-600">
@@ -605,6 +680,7 @@
             document.getElementById('tab-meals').classList.add('hidden');
             document.getElementById('tab-notes').classList.add('hidden');
             document.getElementById('tab-recipes').classList.add('hidden');
+            document.getElementById('tab-monthly').classList.add('hidden');
 
             document.querySelectorAll('.nav-tab').forEach(btn => {
                 btn.classList.remove('text-brand-orange', 'font-bold');
@@ -1476,8 +1552,188 @@
             });
         }
 
+        // ================= MONTHLY ORDERS (4 WEEKS) =================
+        let monthlyList = [];
+        let isInitialMonthlyLoad = true;
+        let lastMonthlySeenAt = 0;
+
+        const _today = new Date();
+        let monthlyYear = _today.getFullYear();
+        let monthlyMonth = _today.getMonth();                      // 0-11
+        let monthlyWeek = Math.min(4, Math.ceil(_today.getDate() / 7)); // 1-4 (days 29-31 count in week 4)
+
+        const monthKeyOf = (y, m) => `${y}-${String(m + 1).padStart(2, '0')}`;
+
+        onValue(ref(db, 'monthly'), (snapshot) => {
+            const data = snapshot.val();
+            const loaded = [];
+            let latest = null;
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const item = { id: key, ...data[key] };
+                    loaded.push(item);
+                    if (!latest || (item.createdAt || 0) > (latest.createdAt || 0)) latest = item;
+                });
+            }
+            monthlyList = loaded;
+            renderMonthly();
+
+            // Notify only when a genuinely NEW item arrives from the other device (not on check/uncheck)
+            if (!isInitialMonthlyLoad && latest && (latest.createdAt || 0) > lastMonthlySeenAt && latest.senderDeviceId !== deviceId) {
+                const msg = `أضاف(ت) ${latest.addedBy} "${latest.name}" لطلبات الأسبوع ${latest.week}`;
+                showToast(msg);
+                sendNativeNotification("بيت العز - طلبات الشهر 🗓️", msg);
+            }
+            if (latest) lastMonthlySeenAt = Math.max(lastMonthlySeenAt, latest.createdAt || 0);
+            isInitialMonthlyLoad = false;
+        });
+
+        window.changeMonthlyMonth = function(delta) {
+            monthlyMonth += delta;
+            if (monthlyMonth > 11) { monthlyMonth = 0; monthlyYear++; }
+            if (monthlyMonth < 0)  { monthlyMonth = 11; monthlyYear--; }
+            renderMonthly();
+        };
+
+        window.selectMonthlyWeek = function(w) {
+            monthlyWeek = w;
+            renderMonthly();
+        };
+
+        window.handleAddMonthly = function(e) {
+            e.preventDefault();
+            const nameEl = document.getElementById('monthlyName');
+            const qtyEl = document.getElementById('monthlyQty');
+            const name = nameEl.value.trim();
+            if (!name) return;
+
+            addSavedItemToCatalog(name);
+
+            set(push(ref(db, 'monthly')), {
+                name,
+                qty: qtyEl.value.trim(),
+                month: monthKeyOf(monthlyYear, monthlyMonth),
+                week: monthlyWeek,
+                checked: false,
+                addedBy: currentUser,
+                senderDeviceId: deviceId,
+                createdAt: Date.now()
+            });
+
+            nameEl.value = '';
+            qtyEl.value = '';
+            nameEl.focus();
+            showToast(`تمت الإضافة لطلبات الأسبوع ${monthlyWeek} 🗓️`);
+            notifyOthers('بيت العز - طلبات الشهر 🗓️', `أضاف(ت) ${currentUser} "${name}" لطلبات الأسبوع ${monthlyWeek}`, 'monthly');
+        };
+
+        window.toggleMonthlyItem = function(id) {
+            const item = monthlyList.find(i => i.id === id);
+            if (item) update(ref(db, `monthly/${id}`), { checked: !item.checked });
+        };
+
+        window.deleteMonthlyItem = function(id) {
+            remove(ref(db, `monthly/${id}`));
+            showToast('تم حذف الطلب');
+        };
+
+        window.clearCompletedMonthly = function() {
+            const key = monthKeyOf(monthlyYear, monthlyMonth);
+            monthlyList.forEach(i => {
+                if (i.checked && i.month === key && i.week === monthlyWeek) remove(ref(db, `monthly/${i.id}`));
+            });
+            showToast('تم مسح المكتمل من الأسبوع');
+        };
+
+        function renderMonthly() {
+            const key = monthKeyOf(monthlyYear, monthlyMonth);
+            const monthItems = monthlyList.filter(i => i.month === key);
+            const weekItems = monthItems
+                .filter(i => i.week === monthlyWeek)
+                .sort((a, b) => (a.checked === b.checked)
+                    ? (a.createdAt || 0) - (b.createdAt || 0)   // oldest first, so the order you added them is kept
+                    : (a.checked ? 1 : -1));                    // finished ones go to the bottom
+
+            // Header
+            const monthName = new Date(monthlyYear, monthlyMonth, 1)
+                .toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' });
+            document.getElementById('monthlyTitle').textContent = monthName;
+            document.getElementById('monthlyTotalText').textContent = `${monthItems.length} طلب في الشهر`;
+            document.getElementById('monthlyDoneText').textContent = `تم ${monthItems.filter(i => i.checked).length}`;
+
+            // Week tabs (with remaining / total badge)
+            const tabs = document.getElementById('monthlyWeekTabs');
+            tabs.innerHTML = '';
+            for (let w = 1; w <= 4; w++) {
+                const items = monthItems.filter(i => i.week === w);
+                const done = items.filter(i => i.checked).length;
+                const active = w === monthlyWeek;
+                const allDone = items.length > 0 && done === items.length;
+                const btn = document.createElement('button');
+                btn.setAttribute('onclick', `selectMonthlyWeek(${w})`);
+                btn.className = `flex flex-col items-center py-2.5 rounded-2xl border transition-all active:scale-95 ${
+                    active ? 'bg-brand-orange text-white border-brand-orange shadow-md shadow-orange-500/30'
+                           : 'bg-white text-gray-600 border-gray-100 shadow-sm hover:border-brand-orange'
+                }`;
+                btn.innerHTML = `
+                    <span class="text-[10px] font-bold ${active ? 'opacity-90' : 'text-gray-400'}">الأسبوع</span>
+                    <span class="text-lg font-black leading-none my-0.5">${w}</span>
+                    <span class="text-[10px] font-bold ${active ? 'text-amber-100' : (allDone ? 'text-green-500' : 'text-brand-orange')}">
+                        ${items.length === 0 ? 'فاضي' : (allDone ? 'تم ✓' : `${done}/${items.length}`)}
+                    </span>`;
+                tabs.appendChild(btn);
+            }
+
+            // Titles for the selected week
+            document.getElementById('monthlyAddTitle').querySelector('span').textContent = `إضافة طلب للأسبوع ${monthlyWeek}`;
+            document.getElementById('monthlyWeekHeading').textContent = `طلبات الأسبوع ${monthlyWeek}`;
+
+            // Week progress
+            const total = weekItems.length;
+            const completed = weekItems.filter(i => i.checked).length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            document.getElementById('monthlyProgressBar').style.width = `${percent}%`;
+            document.getElementById('monthlyProgressText').textContent = `${completed}/${total} (${percent}%)`;
+
+            // List
+            const container = document.getElementById('monthlyListContainer');
+            if (weekItems.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400">
+                        <i class="fa-solid fa-calendar-days text-3xl mb-2 text-gray-300"></i>
+                        <p class="text-xs font-bold">مفيش طلبات متسجلة للأسبوع ${monthlyWeek}</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            weekItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                    item.checked ? 'bg-gray-50 border-gray-200 opacity-60' : 'bg-white border-gray-100 shadow-sm hover:border-brand-yellow'
+                }`;
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleMonthlyItem('${item.id}')"
+                            class="w-5 h-5 rounded-lg accent-brand-orange cursor-pointer shrink-0">
+                        <div class="flex flex-col min-w-0">
+                            <span class="text-xs font-bold ${item.checked ? 'line-through text-gray-400' : 'text-gray-800'}">${esc(item.name)}</span>
+                            <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                ${item.qty ? `<span class="text-[10px] bg-brand-yellowLight text-amber-700 px-1.5 py-0.5 rounded-md font-bold">${esc(item.qty)}</span>` : ''}
+                                <span class="text-[10px] text-gray-400">بواسطة: ${esc(item.addedBy)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="deleteMonthlyItem('${item.id}')" class="text-gray-300 hover:text-red-500 p-1 transition-colors shrink-0">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>`;
+                container.appendChild(card);
+            });
+        }
+
         // Initialize UI State
         updateUserUI();
+        renderMonthly();
         updateSavedItemsDatalist();
         checkNotificationPermissionStatus();
 
