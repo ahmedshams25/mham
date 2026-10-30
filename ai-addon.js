@@ -1,4 +1,14 @@
-import { getApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCzRPZ5HFE95Gge_PPjglx9SJVMwBIYyKo",
+  authDomain: "design-control.firebaseapp.com",
+  projectId: "design-control",
+  storageBucket: "design-control.firebasestorage.app",
+  messagingSenderId: "924894268278",
+  appId: "1:924894268278:web:542d4933750845d45e0857",
+  measurementId: "G-W38F1MGP2J"
+};
 import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const AI_MODEL = 'gemini-3.5-flash-lite';
@@ -17,7 +27,7 @@ const toast = m => {
 };
 
 try {
-  const db = getDatabase(getApp());
+  const db = getDatabase(getApps().length ? getApp() : initializeApp(firebaseConfig));
 
   // ---- live copies of the data (context for the AI) ----
   const D = { grocery: [], monthly: [], recipes: [], meals: [] };
